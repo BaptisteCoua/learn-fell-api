@@ -43,7 +43,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "Tests\\": "tests/",
+            "Functional\\Catalog\\Tests\\": "functional/catalog/tests/"
         }
     },
     "scripts": {

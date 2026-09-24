@@ -4,6 +4,7 @@ namespace Functional\Catalog\Models;
 
 use Functional\Catalog\Database\Factories\SubjectFactory;
 use Functional\Catalog\Enums\SubjectStatus;
+use Functional\Catalog\Events\SubjectSaving;
 use Functional\Users\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
@@ -12,16 +13,24 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Lomkit\Access\Controls\HasControl;
 
 #[Fillable(['title', 'description', 'category_id', 'author_id'])]
 #[UseFactory(SubjectFactory::class)]
 class Subject extends Model
 {
-    use HasFactory;
+    use HasControl, HasFactory;
 
     public const MAX_TAGS = 10;
 
     public const MAX_QUESTIONS = 500;
+
+    /**
+     * @var array<string, class-string>
+     */
+    protected $dispatchesEvents = [
+        'saving' => SubjectSaving::class,
+    ];
 
     protected $attributes = [
         'status' => 'draft',
@@ -50,7 +59,7 @@ class Subject extends Model
      */
     public function tags(): BelongsToMany
     {
-        return $this->belongsToMany(Tag::class);
+        return $this->belongsToMany(Tag::class)->using(SubjectTag::class);
     }
 
     /**

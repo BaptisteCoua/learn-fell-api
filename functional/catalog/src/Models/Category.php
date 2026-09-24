@@ -11,12 +11,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use Lomkit\Access\Controls\HasControl;
 
 #[Fillable(['name', 'position'])]
 #[UseFactory(CategoryFactory::class)]
 class Category extends Model
 {
-    use HasFactory;
+    use HasControl, HasFactory;
 
     /**
      * @return HasMany<Subject, $this>

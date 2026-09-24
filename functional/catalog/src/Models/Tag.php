@@ -10,12 +10,13 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Lomkit\Access\Controls\HasControl;
 
 #[Fillable(['name'])]
 #[UseFactory(TagFactory::class)]
 class Tag extends Model
 {
-    use HasFactory;
+    use HasControl, HasFactory;
 
     public const MAX_LENGTH = 30;
 

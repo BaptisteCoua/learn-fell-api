@@ -1,7 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use Functional\Catalog\Rest\Controllers\CategoriesController;
+use Functional\Catalog\Rest\Controllers\QuestionsController;
+use Functional\Catalog\Rest\Controllers\SubjectsController;
+use Functional\Catalog\Rest\Controllers\TagsController;
+use Lomkit\Rest\Facades\Rest;
 
-// Routes here are wrapped in the 'api' middleware group with the 'api'
-// prefix by the layer service provider. To version your endpoints
-// (/api/v1/...), nest Route::prefix('v1')->group(...) inside.
+Rest::resource('categories', CategoriesController::class);
+Rest::resource('tags', TagsController::class);
+Rest::resource('subjects', SubjectsController::class);
+Rest::resource('questions', QuestionsController::class);
