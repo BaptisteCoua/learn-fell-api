@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8f068754969f98dc89ad9497d3506d21",
+    "content-hash": "16dd9652c0146dfcacd8a3ebbd29d052",
     "packages": [
         {
             "name": "brick/math",
@@ -581,6 +581,36 @@
                 }
             ],
             "time": "2025-12-03T09:33:47+00:00"
+        },
+        {
+            "name": "functional/users",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "./functional/users",
+                "reference": "f0a6fa248de0a1d7694ecaceaebd2599c7bca9e8"
+            },
+            "require": {
+                "xefi/laravel-osdd": "*"
+            },
+            "type": "layer",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Functional\\Users\\Providers\\UsersServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Functional\\Users\\": "src/",
+                    "Functional\\Users\\Database\\Seeders\\": "database/seeders/",
+                    "Functional\\Users\\Database\\Factories\\": "database/factories/"
+                }
+            },
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "graham-campbell/result-type",
@@ -6127,6 +6157,35 @@
             "time": "2026-09-03T16:02:27+00:00"
         },
         {
+            "name": "technical/osdd",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "./technical/osdd",
+                "reference": "a0de4bef36f26fc8ab1f1b1e12874af59057f8be"
+            },
+            "require": {
+                "xefi/laravel-osdd": "*"
+            },
+            "type": "layer",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Technical\\Osdd\\Providers\\OsddServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Technical\\Osdd\\": "src/"
+                }
+            },
+            "description": "OSDD technical configuration layer",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
             "name": "tijsverkoyen/css-to-inline-styles",
             "version": "v2.4.0",
             "source": {
@@ -10072,5 +10131,5 @@
         "php": "^8.3"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
