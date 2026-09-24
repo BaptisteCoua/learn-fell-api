@@ -4,7 +4,8 @@
     "type": "layer",
     "version": "1.0.0",
     "require": {
-        "xefi/laravel-osdd": "*"
+        "xefi/laravel-osdd": "*",
+        "functional/users": "*"
     },
     "autoload": {
         "psr-4": {

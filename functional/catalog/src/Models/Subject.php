@@ -1,0 +1,75 @@
+<?php
+
+namespace Functional\Catalog\Models;
+
+use Functional\Catalog\Database\Factories\SubjectFactory;
+use Functional\Catalog\Enums\SubjectStatus;
+use Functional\Users\Models\User;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+#[Fillable(['title', 'description', 'category_id', 'author_id'])]
+#[UseFactory(SubjectFactory::class)]
+class Subject extends Model
+{
+    use HasFactory;
+
+    public const MAX_TAGS = 10;
+
+    public const MAX_QUESTIONS = 500;
+
+    protected $attributes = [
+        'status' => 'draft',
+        'description' => '',
+        'search_document' => '',
+    ];
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function author(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'author_id');
+    }
+
+    /**
+     * @return BelongsTo<Category, $this>
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * @return BelongsToMany<Tag, $this>
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class);
+    }
+
+    /**
+     * @return HasMany<Question, $this>
+     */
+    public function questions(): HasMany
+    {
+        return $this->hasMany(Question::class)->orderBy('position');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function casts(): array
+    {
+        return [
+            'status' => SubjectStatus::class,
+            'published_at' => 'datetime',
+            'retired_at' => 'datetime',
+        ];
+    }
+}

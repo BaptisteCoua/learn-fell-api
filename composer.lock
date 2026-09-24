@@ -802,9 +802,10 @@
             "dist": {
                 "type": "path",
                 "url": "./functional/catalog",
-                "reference": "50657792ec4e2954fdeb60c59544ac4a933c7c64"
+                "reference": "b79e682183336634dbaae651ac1e06a40cc16ac3"
             },
             "require": {
+                "functional/users": "*",
                 "xefi/laravel-osdd": "*"
             },
             "type": "layer",
@@ -832,9 +833,11 @@
             "dist": {
                 "type": "path",
                 "url": "./functional/learning",
-                "reference": "47f34a05f7be75ace1b3fc4ea37b4c7fa8d8355f"
+                "reference": "91edb4ad92ada48f3acd12ff8676d49e9a225c86"
             },
             "require": {
+                "functional/catalog": "*",
+                "functional/users": "*",
                 "xefi/laravel-osdd": "*"
             },
             "type": "layer",
@@ -862,9 +865,11 @@
             "dist": {
                 "type": "path",
                 "url": "./functional/moderation",
-                "reference": "31fb38771f0f50a73f229f51c4de204bfcd6b3a1"
+                "reference": "2f181d27425dbeddc5bd043bb8e72b9d1772c1f8"
             },
             "require": {
+                "functional/catalog": "*",
+                "functional/users": "*",
                 "xefi/laravel-osdd": "*"
             },
             "type": "layer",
