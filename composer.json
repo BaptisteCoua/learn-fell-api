@@ -17,7 +17,10 @@
         "spatie/laravel-permission": "^8.3",
         "xefi/laravel-osdd": "^2.0",
         "functional/users": "*",
-        "technical/osdd": "*"
+        "technical/osdd": "*",
+        "functional/catalog": "*",
+        "functional/moderation": "*",
+        "functional/learning": "*"
     },
     "require-dev": {
         "laravel/boost": "^2.10",

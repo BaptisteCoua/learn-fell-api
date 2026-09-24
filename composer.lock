@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "16dd9652c0146dfcacd8a3ebbd29d052",
+    "content-hash": "e277232e3a9b796d5e8297de97d0f374",
     "packages": [
         {
             "name": "brick/math",
@@ -581,6 +581,96 @@
                 }
             ],
             "time": "2025-12-03T09:33:47+00:00"
+        },
+        {
+            "name": "functional/catalog",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "./functional/catalog",
+                "reference": "50657792ec4e2954fdeb60c59544ac4a933c7c64"
+            },
+            "require": {
+                "xefi/laravel-osdd": "*"
+            },
+            "type": "layer",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Functional\\Catalog\\Providers\\CatalogServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Functional\\Catalog\\": "src/",
+                    "Functional\\Catalog\\Database\\Seeders\\": "database/seeders/",
+                    "Functional\\Catalog\\Database\\Factories\\": "database/factories/"
+                }
+            },
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "functional/learning",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "./functional/learning",
+                "reference": "47f34a05f7be75ace1b3fc4ea37b4c7fa8d8355f"
+            },
+            "require": {
+                "xefi/laravel-osdd": "*"
+            },
+            "type": "layer",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Functional\\Learning\\Providers\\LearningServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Functional\\Learning\\": "src/",
+                    "Functional\\Learning\\Database\\Seeders\\": "database/seeders/",
+                    "Functional\\Learning\\Database\\Factories\\": "database/factories/"
+                }
+            },
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "functional/moderation",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "./functional/moderation",
+                "reference": "31fb38771f0f50a73f229f51c4de204bfcd6b3a1"
+            },
+            "require": {
+                "xefi/laravel-osdd": "*"
+            },
+            "type": "layer",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Functional\\Moderation\\Providers\\ModerationServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Functional\\Moderation\\": "src/",
+                    "Functional\\Moderation\\Database\\Seeders\\": "database/seeders/",
+                    "Functional\\Moderation\\Database\\Factories\\": "database/factories/"
+                }
+            },
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "functional/users",
