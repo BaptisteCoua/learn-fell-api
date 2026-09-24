@@ -10,17 +10,20 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "functional/catalog": "*",
+        "functional/learning": "*",
+        "functional/moderation": "*",
+        "functional/users": "*",
+        "laravel/fortify": "^1.40",
         "laravel/framework": "^13.17",
+        "laravel/sanctum": "^4.3",
         "laravel/tinker": "^3.0",
         "lomkit/laravel-access-control": "^0.5.0",
         "lomkit/laravel-rest-api": "^2.23",
         "spatie/laravel-permission": "^8.3",
-        "xefi/laravel-osdd": "^2.0",
-        "functional/users": "*",
+        "stevebauman/purify": "^6.3",
         "technical/osdd": "*",
-        "functional/catalog": "*",
-        "functional/moderation": "*",
-        "functional/learning": "*"
+        "xefi/laravel-osdd": "^2.0"
     },
     "require-dev": {
         "laravel/boost": "^2.10",

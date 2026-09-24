@@ -22,6 +22,6 @@ class CatalogServiceProvider extends LayerServiceProvider
 
     public function register(): void
     {
-        //
+        $this->overrideConfigFrom(__DIR__ . '/../../config/purify.php', 'purify');
     }
 }
