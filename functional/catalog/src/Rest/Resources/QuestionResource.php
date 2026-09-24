@@ -37,7 +37,7 @@ class QuestionResource extends Resource
      */
     public function limits(RestRequest $request): array
     {
-        return [10, 25, 50, 100];
+        return [1, 10, 25, 50, 100];
     }
 
     /**

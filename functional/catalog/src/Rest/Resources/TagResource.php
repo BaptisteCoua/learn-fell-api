@@ -19,6 +19,14 @@ class TagResource extends Resource
     }
 
     /**
+     * @return list<int>
+     */
+    public function limits(RestRequest $request): array
+    {
+        return [1, 10, 20];
+    }
+
+    /**
      * @return array<string, string>
      */
     public function defaultOrderBy(RestRequest $request): array

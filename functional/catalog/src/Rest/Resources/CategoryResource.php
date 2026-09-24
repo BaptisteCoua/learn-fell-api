@@ -29,6 +29,14 @@ class CategoryResource extends Resource
     }
 
     /**
+     * @return list<int>
+     */
+    public function limits(RestRequest $request): array
+    {
+        return [1, 50, 100];
+    }
+
+    /**
      * @return array<string, string>
      */
     public function defaultOrderBy(RestRequest $request): array

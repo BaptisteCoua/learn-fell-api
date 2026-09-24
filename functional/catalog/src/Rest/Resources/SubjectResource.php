@@ -58,7 +58,7 @@ class SubjectResource extends Resource
      */
     public function limits(RestRequest $request): array
     {
-        return [10, 20, 50];
+        return [1, 10, 20, 50];
     }
 
     /**
