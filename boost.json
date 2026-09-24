@@ -1,0 +1,29 @@
+{
+    "agents": [
+        "claude_code"
+    ],
+    "cloud": true,
+    "guidelines": true,
+    "mcp": true,
+    "nightwatch": false,
+    "packages": [
+        "lomkit/laravel-access-control",
+        "lomkit/laravel-rest-api",
+        "spatie/laravel-permission",
+        "xefi/faker-php-laravel",
+        "xefi/laravel-osdd"
+    ],
+    "sail": true,
+    "skills": [
+        "infer-conventions",
+        "deploying-to-cloud",
+        "laravel-best-practices",
+        "testing-best-practices",
+        "tailwindcss-development",
+        "laravel-access-control",
+        "laravel-rest-api",
+        "laravel-permission-development",
+        "laravel-osdd",
+        "faker-php-laravel-development"
+    ]
+}
