@@ -2,6 +2,11 @@
 
 use Laravel\Fortify\Features;
 
+/*
+| Headless Fortify: JSON endpoints under /api for the web app, no views.
+| Only registration, password reset and email verification are enabled.
+*/
+
 return [
     'guard' => 'web',
     'middleware' => ['web'],
@@ -9,13 +14,13 @@ return [
     'passwords' => 'users',
     'username' => 'email',
     'email' => 'email',
-    'views' => true,
-    'home' => '/home',
-    'prefix' => '',
+    'views' => false,
+    'home' => env('FRONTEND_URL', 'http://localhost:3000'),
+    'prefix' => 'api',
     'domain' => null,
-    'lowercase_usernames' => false,
+    'lowercase_usernames' => true,
     'limiters' => [
-        'login' => null,
+        'login' => 'login',
         'passkeys' => null,
     ],
     'paths' => [
@@ -78,9 +83,5 @@ return [
         Features::registration(),
         Features::resetPasswords(),
         Features::emailVerification(),
-        Features::updateProfileInformation(),
-        Features::updatePasswords(),
-        Features::twoFactorAuthentication(),
-        Features::passkeys(),
     ],
 ];

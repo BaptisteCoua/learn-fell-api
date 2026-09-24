@@ -892,7 +892,7 @@
             "dist": {
                 "type": "path",
                 "url": "./functional/users",
-                "reference": "f0a6fa248de0a1d7694ecaceaebd2599c7bca9e8"
+                "reference": "021c1841f2397fcaec3be47674863bb2dfa0f0c1"
             },
             "require": {
                 "xefi/laravel-osdd": "*"
@@ -901,7 +901,8 @@
             "extra": {
                 "laravel": {
                     "providers": [
-                        "Functional\\Users\\Providers\\UsersServiceProvider"
+                        "Functional\\Users\\Providers\\UsersServiceProvider",
+                        "Functional\\Users\\Providers\\FortifyServiceProvider"
                     ]
                 }
             },

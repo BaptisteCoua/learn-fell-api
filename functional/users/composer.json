@@ -18,7 +18,8 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Functional\\Users\\Providers\\UsersServiceProvider"
+                "Functional\\Users\\Providers\\UsersServiceProvider",
+                "Functional\\Users\\Providers\\FortifyServiceProvider"
             ]
         }
     }
