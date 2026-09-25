@@ -3,15 +3,26 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "keywords": [
+        "laravel",
+        "framework"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "functional/catalog": "*",
+        "functional/learning": "*",
+        "functional/moderation": "*",
+        "functional/users": "*",
+        "laravel/fortify": "^1.40",
         "laravel/framework": "^13.17",
+        "laravel/sanctum": "^4.3",
         "laravel/tinker": "^3.0",
         "lomkit/laravel-access-control": "^0.5.0",
         "lomkit/laravel-rest-api": "^2.23",
         "spatie/laravel-permission": "^8.3",
+        "stevebauman/purify": "^6.3",
+        "technical/osdd": "*",
         "xefi/laravel-osdd": "^2.0"
     },
     "require-dev": {
@@ -27,14 +38,13 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "app/",
-            "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "App\\": "app/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "Tests\\": "tests/",
+            "Functional\\Catalog\\Tests\\": "functional/catalog/tests/"
         }
     },
     "scripts": {
@@ -88,5 +98,15 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "path",
+            "url": "./functional/*"
+        },
+        {
+            "type": "path",
+            "url": "./technical/*"
+        }
+    ]
 }

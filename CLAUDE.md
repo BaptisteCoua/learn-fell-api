@@ -1,20 +1,23 @@
-# Learn Fell — API
+# CINQ — API
 
-Laravel 13 backend of Learn Fell, consumed by the `web` repo (Nuxt PWA). Part of the
+Laravel 13 backend of CINQ, consumed by the `web` repo (Nuxt PWA). Part of the
 `learn-fell-workspace` spec-kit workspace: open sessions at the workspace root.
 
 ## Stack
 
-- Laravel 13, PHP 8.5, PostgreSQL, Redis — all run through Laravel Sail (Docker). PHP is not installed on the host.
-- Architecture: `xefi/laravel-osdd` layers under `layers/`, one per domain.
-- CRUD endpoints via `lomkit/laravel-rest-api`, authorization via `lomkit/laravel-access-control`, roles and permissions stored with `spatie/laravel-permission`, factories with `xefi/faker-php-laravel`.
+- Laravel 13, PHP 8.5, PostgreSQL, Redis, Mailpit — all run through Laravel Sail (Docker). PHP is not installed on the host.
+- Architecture: `xefi/laravel-osdd`. There is no `app/`, `database/` or root `config/`: code lives in layers under `functional/<layer>/` (business domains: `users`, `catalog`, `moderation`, `learning`) and `technical/<layer>/` (cross-cutting: `osdd`). Each layer is a Composer package with its own `src/`, `database/`, `routes/api.php`, `config/`, `lang/` and `tests/`.
+- Generate code with the `osdd:*` mirrors of `make:*`, always with `--layer=functional/<layer>` (for example `osdd:model`, `osdd:migration`, `osdd:test`). Create a layer with `osdd:layer functional/<name> --target-path=/var/www/html/functional --generators=service-provider --generators=test --generators=routes`, then `osdd:phpunit`.
+- Layer config overrides go in the layer provider's `register()`, so packages read them before they boot.
+- CRUD endpoints via `lomkit/laravel-rest-api`, authorization via `lomkit/laravel-access-control`, roles and permissions stored with `spatie/laravel-permission` (checks by permission only), factories with `xefi/faker-php-laravel`.
+- Authentication: Sanctum SPA sessions with Fortify in headless mode.
 
 ## Run
 
 ```bash
-./vendor/bin/sail up -d           # app on http://localhost:8090
+./vendor/bin/sail up -d           # app on http://localhost:8090, Mailpit on http://localhost:8035
 ./vendor/bin/sail artisan migrate
-./vendor/bin/sail npm run dev     # Vite on port 5180
+./vendor/bin/sail artisan osdd:seed
 ```
 
 Every `php`, `composer`, `artisan` and `npm` command goes through `./vendor/bin/sail`.

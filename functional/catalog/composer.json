@@ -1,0 +1,26 @@
+{
+    "name": "functional/catalog",
+    "description": "",
+    "type": "layer",
+    "version": "1.0.0",
+    "require": {
+        "xefi/laravel-osdd": "*",
+        "functional/users": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Functional\\Catalog\\": "src/",
+            "Functional\\Catalog\\Database\\Seeders\\": "database/seeders/",
+            "Functional\\Catalog\\Database\\Factories\\": "database/factories/"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Functional\\Catalog\\Providers\\CatalogServiceProvider"
+            ]
+        }
+    }
+}
