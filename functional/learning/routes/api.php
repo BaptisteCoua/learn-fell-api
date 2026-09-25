@@ -1,7 +1,12 @@
 <?php
 
+use Functional\Learning\Rest\Controllers\CardProgressController;
+use Functional\Learning\Rest\Controllers\LearningsController;
 use Illuminate\Support\Facades\Route;
+use Lomkit\Rest\Facades\Rest;
 
-// Routes here are wrapped in the 'api' middleware group with the 'api'
-// prefix by the layer service provider. To version your endpoints
-// (/api/v1/...), nest Route::prefix('v1')->group(...) inside.
+// Reviewing is personal: every learning route needs an account.
+Route::middleware('auth:sanctum')->group(function (): void {
+    Rest::resource('learnings', LearningsController::class);
+    Rest::resource('card-progress', CardProgressController::class);
+});

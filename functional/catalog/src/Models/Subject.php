@@ -4,10 +4,12 @@ namespace Functional\Catalog\Models;
 
 use Functional\Catalog\Database\Factories\SubjectFactory;
 use Functional\Catalog\Enums\SubjectStatus;
+use Functional\Catalog\Events\SubjectDeleting;
 use Functional\Catalog\Events\SubjectSaving;
 use Functional\Users\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,6 +32,7 @@ class Subject extends Model
      */
     protected $dispatchesEvents = [
         'saving' => SubjectSaving::class,
+        'deleting' => SubjectDeleting::class,
     ];
 
     protected $attributes = [
@@ -68,6 +71,16 @@ class Subject extends Model
     public function questions(): HasMany
     {
         return $this->hasMany(Question::class)->orderBy('position');
+    }
+
+    /**
+     * The description is optional: an empty one is stored as an empty text.
+     *
+     * @return Attribute<string, string|null>
+     */
+    protected function description(): Attribute
+    {
+        return Attribute::make(set: fn (?string $description): string => $description ?? '');
     }
 
     /**

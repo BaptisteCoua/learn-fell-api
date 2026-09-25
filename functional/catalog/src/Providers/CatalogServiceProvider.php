@@ -7,8 +7,10 @@ use Functional\Catalog\Access\Controls\QuestionControl;
 use Functional\Catalog\Access\Controls\SubjectControl;
 use Functional\Catalog\Access\Controls\TagControl;
 use Functional\Catalog\Database\Seeders\CatalogSeeder;
+use Functional\Catalog\Events\SubjectDeleting;
 use Functional\Catalog\Events\SubjectSaving;
 use Functional\Catalog\Events\SubjectTagsChanged;
+use Functional\Catalog\Listeners\DeleteSubjectQuestions;
 use Functional\Catalog\Listeners\RefreshSubjectSearchDocument;
 use Functional\Catalog\Models\Category;
 use Functional\Catalog\Models\Question;
@@ -45,6 +47,7 @@ class CatalogServiceProvider extends LayerServiceProvider
         Gate::policy(Tag::class, TagPolicy::class);
 
         Event::listen(SubjectSaving::class, [RefreshSubjectSearchDocument::class, 'handleSubjectSaving']);
+        Event::listen(SubjectDeleting::class, DeleteSubjectQuestions::class);
         Event::listen(SubjectTagsChanged::class, [RefreshSubjectSearchDocument::class, 'handleSubjectTagsChanged']);
     }
 

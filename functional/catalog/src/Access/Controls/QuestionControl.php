@@ -10,7 +10,8 @@ use Lomkit\Access\Controls\Control;
 use Lomkit\Access\Perimeters\Perimeter;
 
 /**
- * A question is reachable exactly when its subject is (see SubjectControl).
+ * A question is reachable exactly when its subject is, and written by its subject's author
+ * (see SubjectControl). Creating one checks its subject in QuestionResource.
  */
 class QuestionControl extends Control
 {
@@ -26,6 +27,15 @@ class QuestionControl extends Control
                 ->allowed(fn (Model $user, string $method): bool => $user->can('subjects.moderate'))
                 ->should(fn (Model $user, Model $question): bool => true)
                 ->query(fn (Builder $query, Model $user): Builder => $query),
+
+            Perimeter::new()
+                ->allowed(fn (Model $user, string $method): bool => in_array($method, SubjectControl::WRITE_METHODS, true)
+                    && $user->hasVerifiedEmail())
+                ->should(fn (Model $user, Model $question): bool => $question->subject->author_id === $user->getKey())
+                ->query(fn (Builder $query, Model $user): Builder => $query->whereHas(
+                    'subject',
+                    fn (Builder $subjects): Builder => $subjects->where('author_id', $user->getKey()),
+                )),
 
             Perimeter::new()
                 ->allowed(fn (Model $user, string $method): bool => $method === 'view')

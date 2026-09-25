@@ -15,9 +15,14 @@ trait SearchesCatalog
      */
     protected function searchResource(string $resource, array $search = [], ?User $user = null): TestResponse
     {
-        $request = $user === null ? $this : $this->actingAs($user);
+        if ($user === null) {
+            // Without a user, search as a visitor even after an earlier actingAs().
+            $this->app['auth']->forgetGuards();
+        } else {
+            $this->actingAs($user);
+        }
 
-        return $request->postJson("/api/{$resource}/search", ['search' => $search]);
+        return $this->postJson("/api/{$resource}/search", ['search' => $search]);
     }
 
     /**
