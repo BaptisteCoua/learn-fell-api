@@ -9,6 +9,8 @@ return [
     'invalid_credentials' => 'Adresse email ou mot de passe incorrect.',
     'email_not_verified' => 'Votre adresse email n’est pas encore confirmée. Ouvrez le lien reçu par email pour activer votre compte.',
     'locked' => 'Trop de tentatives de connexion. Réessayez dans :minutes minutes, ou réinitialisez votre mot de passe.',
+    'email_taken' => 'Un compte existe déjà avec cette adresse. Connectez-vous, ou réinitialisez votre mot de passe si vous l’avez oublié.',
+    'email_pending_verification' => 'Un compte attend déjà la confirmation de cette adresse. Demandez un nouveau lien de confirmation.',
     'link_expired' => 'Ce lien a expiré ou a déjà été utilisé. Demandez-en un nouveau.',
     'category_name_taken' => 'Une catégorie « :name » existe déjà.',
     'category_not_empty' => 'Impossible de supprimer « :name » : :count sujets y sont rangés. Une catégorie doit être vide pour être supprimée.',

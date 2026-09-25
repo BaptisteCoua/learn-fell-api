@@ -3,6 +3,8 @@
 namespace Functional\Users\Models;
 
 use Functional\Users\Database\Factories\UserFactory;
+use Functional\Users\Notifications\ResetPasswordNotification;
+use Functional\Users\Notifications\VerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -32,6 +34,19 @@ class User extends Authenticatable implements MustVerifyEmail
         return static::query()
             ->whereNull('email_verified_at')
             ->where('created_at', '<', now()->subDays(7));
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmailNotification);
+    }
+
+    /**
+     * @param  string  $token
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 
     /**

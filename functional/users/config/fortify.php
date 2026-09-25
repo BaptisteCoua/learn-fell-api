@@ -4,7 +4,8 @@ use Laravel\Fortify\Features;
 
 /*
 | Headless Fortify: JSON endpoints under /api for the web app, no views.
-| Only registration, password reset and email verification are enabled.
+| Only registration and password reset are enabled; email confirmation has its own routes
+| in routes/account.php, since Fortify's require a logged-in account.
 */
 
 return [
@@ -82,6 +83,5 @@ return [
     'features' => [
         Features::registration(),
         Features::resetPasswords(),
-        Features::emailVerification(),
     ],
 ];
