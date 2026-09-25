@@ -6,7 +6,7 @@ use Functional\Catalog\Events\SubjectDeleting;
 
 /**
  * Deleting a subject deletes its questions and frees its tags (FR-019). Each question is
- * deleted as a model so that QuestionDeleted reaches the other layers.
+ * deleted as a model so that QuestionDeleting reaches the other layers.
  */
 class DeleteSubjectQuestions
 {

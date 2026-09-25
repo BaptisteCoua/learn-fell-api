@@ -5,9 +5,9 @@ namespace Functional\Catalog\Events;
 use Functional\Catalog\Models\Question;
 
 /**
- * A question is gone: the learning layer drops the review progress attached to it.
+ * A question was added: whoever learns its subject gets it as a new card (FR-051).
  */
-class QuestionDeleted
+class QuestionCreated
 {
     public function __construct(public readonly Question $question) {}
 }

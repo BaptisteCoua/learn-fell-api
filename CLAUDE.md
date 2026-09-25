@@ -18,6 +18,7 @@ Laravel 13 backend of CINQ, consumed by the `web` repo (Nuxt PWA). Part of the
 ./vendor/bin/sail up -d           # app on http://localhost:8090, Mailpit on http://localhost:8035
 ./vendor/bin/sail artisan migrate
 ./vendor/bin/sail artisan osdd:seed
+./vendor/bin/sail artisan queue:work    # new questions reach their subject's learners through a queued job
 ```
 
 Every `php`, `composer`, `artisan` and `npm` command goes through `./vendor/bin/sail`.
