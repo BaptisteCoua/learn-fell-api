@@ -1,7 +1,12 @@
 <?php
 
+use Functional\Moderation\Rest\Controllers\ModerationDecisionsController;
+use Functional\Moderation\Rest\Controllers\ReportsController;
 use Illuminate\Support\Facades\Route;
+use Lomkit\Rest\Facades\Rest;
 
-// Routes here are wrapped in the 'api' middleware group with the 'api'
-// prefix by the layer service provider. To version your endpoints
-// (/api/v1/...), nest Route::prefix('v1')->group(...) inside.
+// Reporting and moderating need an account.
+Route::middleware('auth:sanctum')->group(function (): void {
+    Rest::resource('reports', ReportsController::class);
+    Rest::resource('moderation-decisions', ModerationDecisionsController::class);
+});

@@ -19,6 +19,7 @@ return [
     'question_limit_reached' => 'Un sujet compte au plus :max questions.',
     'last_question_of_published_subject' => 'Un sujet publié doit garder au moins une question. Dépubliez-le d’abord pour supprimer celle-ci.',
     'reason_required' => 'Saisissez un motif : il sera visible par l’auteur.',
+    'subject_not_retired' => 'Seul un sujet retiré peut être rétabli.',
     'report_already_pending' => 'Vous avez déjà signalé ce sujet. Votre signalement est en cours d’examen.',
     'subject_not_published' => 'Seul un sujet publié peut être appris.',
     'already_learning' => 'Vous apprenez déjà ce sujet.',

@@ -56,6 +56,8 @@ return [
             'name' => 'nom',
             'reason' => 'motif',
             'comment' => 'commentaire',
+            'subject_id' => 'sujet',
+            'decision' => 'décision',
             'q' => 'recherche',
         ];
 
