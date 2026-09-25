@@ -45,7 +45,8 @@
         "psr-4": {
             "Tests\\": "tests/",
             "Functional\\Catalog\\Tests\\": "functional/catalog/tests/",
-            "Functional\\Learning\\Tests\\": "functional/learning/tests/"
+            "Functional\\Learning\\Tests\\": "functional/learning/tests/",
+            "Functional\\Moderation\\Tests\\": "functional/moderation/tests/"
         }
     },
     "scripts": {
