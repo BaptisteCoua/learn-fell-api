@@ -16,6 +16,7 @@ return [
     'category_not_empty' => 'Impossible de supprimer « :name » : :count sujets y sont rangés. Une catégorie doit être vide pour être supprimée.',
     'subject_has_no_question' => 'Ajoutez au moins une question avant de publier ce sujet.',
     'subject_retired' => 'Ce sujet a été retiré par la modération : seul un administrateur peut le rétablir.',
+    'question_limit_reached' => 'Un sujet compte au plus :max questions.',
     'last_question_of_published_subject' => 'Un sujet publié doit garder au moins une question. Dépubliez-le d’abord pour supprimer celle-ci.',
     'reason_required' => 'Saisissez un motif : il sera visible par l’auteur.',
     'report_already_pending' => 'Vous avez déjà signalé ce sujet. Votre signalement est en cours d’examen.',
