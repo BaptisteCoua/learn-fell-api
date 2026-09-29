@@ -5,6 +5,7 @@ namespace Functional\Reminders\Providers;
 use Functional\Reminders\Access\Controls\PushSubscriptionControl;
 use Functional\Reminders\Access\Controls\ReminderSettingControl;
 use Functional\Reminders\Console\DispatchDueRemindersCommand;
+use Functional\Reminders\Database\Seeders\RemindersSeeder;
 use Functional\Reminders\Listeners\CreateReminderSetting;
 use Functional\Reminders\Listeners\DeleteRemindersOfUser;
 use Functional\Reminders\Listeners\RecordPushDelivery;
@@ -29,6 +30,8 @@ class RemindersServiceProvider extends LayerServiceProvider
         if ($this->app->runningInConsole()) {
             $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
             $this->commands([DispatchDueRemindersCommand::class]);
+            // After the accounts it turns reminders on for.
+            $this->loadSeeders([RemindersSeeder::class], priority: 20);
         }
 
         $this->loadTranslationsFrom(__DIR__.'/../../lang', 'reminders');
