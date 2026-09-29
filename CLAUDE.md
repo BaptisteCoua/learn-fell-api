@@ -11,6 +11,7 @@ Laravel 13 backend of CINQ, consumed by the `web` repo (Nuxt PWA). Part of the
 - Layer config overrides go in the layer provider's `register()`, so packages read them before they boot.
 - CRUD endpoints via `lomkit/laravel-rest-api`, authorization via `lomkit/laravel-access-control`, roles and permissions stored with `spatie/laravel-permission` (checks by permission only), factories with `xefi/faker-php-laravel`.
 - Authentication: Sanctum SPA sessions with Fortify in headless mode.
+- Question images (`functional/catalog`): `intervention/image` with the Imagick driver, so the `imagick` extension is required (the Sail runtime has it, with `exif`). Uploads are re-encoded into WebP variants on the private disk named by `QUESTION_IMAGES_DISK` (`local` by default, `storage/app/private/question-images/`) and served by `GET /api/question-images/{id}/{width}`, never from a public disk.
 
 ## Run
 
@@ -19,7 +20,7 @@ Laravel 13 backend of CINQ, consumed by the `web` repo (Nuxt PWA). Part of the
 ./vendor/bin/sail artisan migrate
 ./vendor/bin/sail artisan osdd:seed
 ./vendor/bin/sail artisan queue:work    # new questions reach their subject's learners, and reminders go out, through queued jobs
-./vendor/bin/sail artisan schedule:work # reminders:dispatch every minute, model:prune every day
+./vendor/bin/sail artisan schedule:work # reminders:dispatch every minute, model:prune every day, pending question images pruned every hour
 ```
 
 Review reminders (`functional/reminders`) need VAPID keys for web push: `./vendor/bin/sail artisan webpush:vapid` writes them into `.env`, and the web app needs the same public key as `NUXT_PUBLIC_VAPID_PUBLIC_KEY`. Keep the keys once devices have subscribed: new keys lose every device. To send the reminders of a given minute without waiting, `./vendor/bin/sail artisan reminders:dispatch --now="2026-09-26 17:00"` (UTC) sends them right away, outside the queue.

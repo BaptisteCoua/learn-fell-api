@@ -11,6 +11,7 @@ use Lomkit\Rest\Http\Requests\MutateRequest;
 use Lomkit\Rest\Http\Requests\OperateRequest;
 use Lomkit\Rest\Http\Requests\RestoreRequest;
 use Lomkit\Rest\Http\Requests\RestRequest;
+use Lomkit\Rest\Http\Requests\SearchRequest;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -27,6 +28,7 @@ abstract class TestCase extends BaseTestCase
         MutateRequest::class,
         OperateRequest::class,
         RestoreRequest::class,
+        SearchRequest::class,
     ];
 
     /**
