@@ -13,7 +13,9 @@
         "functional/catalog": "*",
         "functional/learning": "*",
         "functional/moderation": "*",
+        "functional/reminders": "*",
         "functional/users": "*",
+        "laravel-notification-channels/webpush": "^13.0",
         "laravel/fortify": "^1.40",
         "laravel/framework": "^13.17",
         "laravel/sanctum": "^4.3",
@@ -46,7 +48,8 @@
             "Tests\\": "tests/",
             "Functional\\Catalog\\Tests\\": "functional/catalog/tests/",
             "Functional\\Learning\\Tests\\": "functional/learning/tests/",
-            "Functional\\Moderation\\Tests\\": "functional/moderation/tests/"
+            "Functional\\Moderation\\Tests\\": "functional/moderation/tests/",
+            "Functional\\Reminders\\Tests\\": "functional/reminders/tests/"
         }
     },
     "scripts": {

@@ -1,0 +1,27 @@
+{
+    "name": "functional/reminders",
+    "description": "",
+    "type": "layer",
+    "version": "1.0.0",
+    "require": {
+        "xefi/laravel-osdd": "*",
+        "functional/users": "*",
+        "functional/learning": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Functional\\Reminders\\": "src/",
+            "Functional\\Reminders\\Database\\Seeders\\": "database/seeders/",
+            "Functional\\Reminders\\Database\\Factories\\": "database/factories/"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Functional\\Reminders\\Providers\\RemindersServiceProvider"
+            ]
+        }
+    }
+}
