@@ -2,8 +2,11 @@
 
 namespace Functional\Reminders\Domain;
 
+use Carbon\CarbonImmutable;
 use Functional\Learning\Models\Learning;
+use Functional\Learning\Models\ReviewAnswer;
 use Functional\Learning\Queries\DueCardsQuery;
+use Functional\Reminders\Models\ReminderSend;
 use Functional\Reminders\Models\ReminderSetting;
 
 /**
@@ -34,13 +37,33 @@ class ReminderEligibility
             ->pluck('due_count', 'subject_id')
             ->all();
 
-        if ($dueCardsBySubject === []) {
+        if ($dueCardsBySubject === [] || ! $this->spacingAllowsToday($setting)) {
             return null;
         }
 
         return new DueReminder(
             (int) array_sum($dueCardsBySubject),
             array_map(intval(...), array_keys($dueCardsBySubject)),
+        );
+    }
+
+    /**
+     * The days without review count from the last answer, or from the activation of an account
+     * that never answered (FR-012), in the account's time zone.
+     */
+    private function spacingAllowsToday(ReminderSetting $setting): bool
+    {
+        $timezone = $setting->user->timezone;
+        $lastAnswerAt = ReviewAnswer::query()->where('user_id', $setting->user_id)->max('answered_at');
+        $lastActivity = $lastAnswerAt !== null
+            ? CarbonImmutable::parse($lastAnswerAt)
+            : ($setting->activated_at ?? now());
+        $lastReminderDate = ReminderSend::query()->where('user_id', $setting->user_id)->max('local_date');
+
+        return ReminderSpacing::allows(
+            now($timezone)->toDateString(),
+            CarbonImmutable::instance($lastActivity)->setTimezone($timezone)->toDateString(),
+            $lastReminderDate === null ? null : substr((string) $lastReminderDate, 0, 10),
         );
     }
 }

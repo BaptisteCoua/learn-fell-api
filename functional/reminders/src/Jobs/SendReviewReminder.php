@@ -41,7 +41,7 @@ class SendReviewReminder implements ShouldBeUnique, ShouldQueue
         return (string) $this->reminderSettingId;
     }
 
-    public function handle(ReminderEligibility $eligibility, WebPushChannel $webPushChannel): void
+    public function handle(ReminderEligibility $eligibility): void
     {
         $setting = ReminderSetting::query()->with('user')->find($this->reminderSettingId);
 
@@ -62,7 +62,7 @@ class SendReviewReminder implements ShouldBeUnique, ShouldQueue
             $this->markServed($send, self::MAIL);
         }
 
-        if (! in_array(self::WEBPUSH, $send->channels, true) && $this->pushReached($setting, $reminder, $webPushChannel)) {
+        if (! in_array(self::WEBPUSH, $send->channels, true) && $this->pushReached($setting, $reminder)) {
             $this->markServed($send, self::WEBPUSH);
         }
     }
@@ -105,10 +105,16 @@ class SendReviewReminder implements ShouldBeUnique, ShouldQueue
 
     /**
      * Served when at least one device accepted it; an expired device is removed by the channel.
+     * The channel is only built for an account with devices, so that the push configuration
+     * never holds the email back.
      */
-    private function pushReached(ReminderSetting $setting, DueReminder $reminder, WebPushChannel $webPushChannel): bool
+    private function pushReached(ReminderSetting $setting, DueReminder $reminder): bool
     {
-        $reports = $webPushChannel->send($setting, new ReviewReminderNotification($reminder, [WebPushChannel::class]));
+        if (! $setting->pushSubscriptions()->exists()) {
+            return false;
+        }
+
+        $reports = app(WebPushChannel::class)->send($setting, new ReviewReminderNotification($reminder, [WebPushChannel::class]));
 
         return collect($reports)->contains(fn (MessageSentReport $report): bool => $report->isSuccess());
     }

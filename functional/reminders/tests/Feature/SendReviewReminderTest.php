@@ -101,6 +101,17 @@ class SendReviewReminderTest extends TestCase
         $this->assertSame(['mail', 'webpush'], ReminderSend::query()->sole()->channels);
     }
 
+    public function test_the_email_does_not_depend_on_the_push_configuration(): void
+    {
+        [$setting] = $this->learnerWithTwelveDueCards();
+        config(['webpush.vapid.private_key' => 'not-a-key']);
+
+        $this->send($setting);
+
+        Notification::assertSentTo($setting, ReviewReminderNotification::class);
+        $this->assertSame(['mail'], ReminderSend::query()->sole()->channels);
+    }
+
     public function test_a_second_job_the_same_day_sends_nothing(): void
     {
         [$setting] = $this->learnerWithTwelveDueCards();
