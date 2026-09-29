@@ -28,4 +28,7 @@ return [
     'invalid_send_time' => 'Choisissez une heure entre 6 h et 23 h 30, à l’heure pleine ou à la demi-heure.',
     'invalid_push_subscription' => 'Cet appareil n’a pas pu être enregistré pour les notifications.',
     'invalid_link' => 'Ce lien n’est pas valide.',
+    'image_invalid_format' => 'Choisissez une image au format JPEG, PNG ou WebP.',
+    'recto_empty' => 'Ajoutez un texte ou une image au recto.',
+    'recto_image_limit' => 'Un recto porte au plus :max images.',
 ];

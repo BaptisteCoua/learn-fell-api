@@ -2,6 +2,7 @@
 
 namespace Functional\Catalog\Rest\Resources;
 
+use Functional\Catalog\Access\Controls\QuestionControl;
 use Functional\Catalog\Enums\SubjectStatus;
 use Functional\Catalog\Models\Question;
 use Functional\Catalog\Models\Subject;
@@ -18,6 +19,7 @@ use Lomkit\Rest\Http\Requests\MutateRequest;
 use Lomkit\Rest\Http\Requests\RestRequest;
 use Lomkit\Rest\Http\Resource;
 use Lomkit\Rest\Relations\BelongsTo;
+use Lomkit\Rest\Relations\HasMany;
 use Lomkit\Rest\Relations\Relation;
 use Technical\Osdd\Exceptions\BusinessRuleException;
 
@@ -45,7 +47,10 @@ class QuestionResource extends Resource
      */
     public function relations(RestRequest $request): array
     {
-        return [BelongsTo::make('subject', SubjectResource::class)];
+        return [
+            BelongsTo::make('subject', SubjectResource::class),
+            HasMany::make('images', QuestionImageResource::class),
+        ];
     }
 
     /**
@@ -145,13 +150,19 @@ class QuestionResource extends Resource
         return ['position' => 'asc'];
     }
 
-    /**
-     * A question follows its subject: published for visitors, QuestionControl otherwise.
-     */
     public function searchQuery(RestRequest $request, Builder $query): Builder
     {
-        return $request->user() === null
+        return self::readableBy($request->user(), $query);
+    }
+
+    /**
+     * A question follows its subject: published for visitors, QuestionControl otherwise. The
+     * images of a question are readable exactly by the same people (FR-016).
+     */
+    public static function readableBy(?Model $user, Builder $query): Builder
+    {
+        return $user === null
             ? $query->whereHas('subject', fn (Builder $subjects): Builder => $subjects->where('status', SubjectStatus::Published))
-            : $query->controlled();
+            : (new QuestionControl)->queried($query, $user);
     }
 }

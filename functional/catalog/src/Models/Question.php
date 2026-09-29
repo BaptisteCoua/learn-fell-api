@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Lomkit\Access\Controls\HasControl;
 
 #[Fillable(['subject_id', 'recto_html', 'verso_html', 'position'])]
@@ -33,6 +34,16 @@ class Question extends Model
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
+    }
+
+    /**
+     * The images of the recto, in the order the author chose (FR-005).
+     *
+     * @return HasMany<QuestionImage, $this>
+     */
+    public function images(): HasMany
+    {
+        return $this->hasMany(QuestionImage::class)->orderBy('position');
     }
 
     /**
