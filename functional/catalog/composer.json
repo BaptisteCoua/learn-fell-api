@@ -5,7 +5,8 @@
     "version": "1.0.0",
     "require": {
         "xefi/laravel-osdd": "*",
-        "functional/users": "*"
+        "functional/users": "*",
+        "intervention/image": "^4.3"
     },
     "autoload": {
         "psr-4": {
