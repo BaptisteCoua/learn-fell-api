@@ -4,6 +4,7 @@ namespace Functional\Catalog\Rest\Resources;
 
 use Functional\Catalog\Models\QuestionImage;
 use Functional\Catalog\Rules\DistinctImagePosition;
+use Functional\Catalog\Rules\WithinRectoImageLimit;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Lomkit\Rest\Http\Requests\RestRequest;
 use Lomkit\Rest\Http\Resource;
@@ -41,7 +42,8 @@ class QuestionImageResource extends Resource
     }
 
     /**
-     * Each image of a recto is described (FR-004) and placed (FR-005).
+     * Each image of a recto is described (FR-004) and placed (FR-005), 4 images at most
+     * (FR-003).
      *
      * @return array<string, mixed>
      */
@@ -49,7 +51,14 @@ class QuestionImageResource extends Resource
     {
         return [
             'alt' => ['required', 'string', 'max:250'],
-            'position' => ['required', 'integer', 'min:0', 'max:'.(config('catalog.images.max_per_recto') - 1), new DistinctImagePosition],
+            'position' => [
+                new WithinRectoImageLimit,
+                'required',
+                'integer',
+                'min:0',
+                'max:'.(config('catalog.images.max_per_recto') - 1),
+                new DistinctImagePosition,
+            ],
         ];
     }
 

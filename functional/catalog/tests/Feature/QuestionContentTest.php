@@ -76,7 +76,13 @@ class QuestionContentTest extends TestCase
 
         $this->addQuestion($author, $subject, '<p> </p>')
             ->assertUnprocessable()
+            ->assertJson(['code' => 'recto_empty']);
+
+        $this->addQuestion($author, $subject, '<p>'.str_repeat('a', 5001).'</p>')
             ->assertJsonValidationErrors(['mutate.0.attributes.recto_html']);
+
+        $this->addQuestion($author, $subject, '<p>Recto</p>', '<p> </p>')
+            ->assertJsonValidationErrors(['mutate.0.attributes.verso_html']);
 
         $this->addQuestion($author, $subject, '<p>Recto</p>', '<p>'.str_repeat('a', 5001).'</p>')
             ->assertJsonValidationErrors(['mutate.0.attributes.verso_html']);
