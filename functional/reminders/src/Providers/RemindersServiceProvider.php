@@ -4,6 +4,7 @@ namespace Functional\Reminders\Providers;
 
 use Functional\Reminders\Access\Controls\PushSubscriptionControl;
 use Functional\Reminders\Access\Controls\ReminderSettingControl;
+use Functional\Reminders\Console\DispatchDueRemindersCommand;
 use Functional\Reminders\Listeners\CreateReminderSetting;
 use Functional\Reminders\Listeners\DeleteRemindersOfUser;
 use Functional\Reminders\Listeners\RefreshReminderAfterTimezoneChange;
@@ -23,7 +24,10 @@ class RemindersServiceProvider extends LayerServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
+            $this->commands([DispatchDueRemindersCommand::class]);
         }
+
+        $this->loadTranslationsFrom(__DIR__.'/../../lang', 'reminders');
 
         $this->withRouting(
             api: __DIR__.'/../../routes/api.php',
