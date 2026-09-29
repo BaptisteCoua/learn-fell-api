@@ -2,18 +2,16 @@
 
 namespace Functional\Learning\Rest\Instructions;
 
-use Functional\Catalog\Enums\SubjectStatus;
 use Functional\Catalog\Models\Question;
-use Functional\Learning\Domain\LeitnerSchedule;
+use Functional\Learning\Queries\DueCardsQuery;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Lomkit\Rest\Http\Requests\RestRequest;
 use Lomkit\Rest\Instructions\Instruction;
 
 /**
- * The cards to review today (FR-044): of the chosen subjects, still published, due today in
- * the learner's time zone, the most overdue first, then in the subject's question order.
- * An unpublished subject pauses its cards without losing them (research R8).
+ * The cards to review today of the chosen subjects (DueCardsQuery), the most overdue first,
+ * then in the subject's question order.
  */
 class DueCardsInstruction extends Instruction
 {
@@ -27,12 +25,7 @@ class DueCardsInstruction extends Instruction
      */
     public function handle(array $fields, Builder $query): void
     {
-        $today = LeitnerSchedule::todayFor(Auth::user()->timezone)->toDateString();
-
-        $query
-            ->whereIn('card_progress.subject_id', $fields['subject_ids'])
-            ->where('card_progress.next_review_on', '<=', $today)
-            ->whereHas('subject', fn (Builder $subjects): Builder => $subjects->where('status', SubjectStatus::Published))
+        DueCardsQuery::constrain($query, Auth::user()->timezone, $fields['subject_ids'])
             ->reorder()
             ->orderBy('card_progress.next_review_on')
             ->orderBy('card_progress.subject_id')
