@@ -50,6 +50,19 @@ class ReminderSetting extends Model
     }
 
     /**
+     * Any change of channel answers the proposal (FR-002); the first channel turned on starts
+     * the spacing clock of an account that never reviewed (FR-012).
+     */
+    public function noteChannelChange(): void
+    {
+        $this->proposal_seen_at ??= now();
+
+        if ($this->activated_at === null && $this->hasActiveChannel()) {
+            $this->activated_at = now();
+        }
+    }
+
+    /**
      * Stored as a time of day, exchanged as "HH:MM".
      *
      * @return Attribute<string, string>
