@@ -7,15 +7,19 @@ use Functional\Reminders\Access\Controls\ReminderSettingControl;
 use Functional\Reminders\Console\DispatchDueRemindersCommand;
 use Functional\Reminders\Listeners\CreateReminderSetting;
 use Functional\Reminders\Listeners\DeleteRemindersOfUser;
+use Functional\Reminders\Listeners\RecordPushDelivery;
 use Functional\Reminders\Listeners\RefreshReminderAfterTimezoneChange;
 use Functional\Reminders\Models\PushSubscription;
 use Functional\Reminders\Models\ReminderSetting;
 use Functional\Reminders\Policies\PushSubscriptionPolicy;
 use Functional\Reminders\Policies\ReminderSettingPolicy;
+use Functional\Reminders\Support\RecordsEmailBounce;
+use Functional\Reminders\Support\SmtpBounceRecorder;
 use Functional\Users\Models\User;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Lomkit\Access\Access;
+use NotificationChannels\WebPush\Events\NotificationSent;
 use Xefi\LaravelOSDD\LayerServiceProvider;
 
 class RemindersServiceProvider extends LayerServiceProvider
@@ -43,10 +47,13 @@ class RemindersServiceProvider extends LayerServiceProvider
         Event::listen('eloquent.created: '.User::class, CreateReminderSetting::class);
         Event::listen('eloquent.updated: '.User::class, RefreshReminderAfterTimezoneChange::class);
         Event::listen('eloquent.deleting: '.User::class, DeleteRemindersOfUser::class);
+        Event::listen(NotificationSent::class, RecordPushDelivery::class);
     }
 
     public function register(): void
     {
         $this->overrideConfigFrom(__DIR__.'/../../config/webpush.php', 'webpush');
+
+        $this->app->bind(RecordsEmailBounce::class, SmtpBounceRecorder::class);
     }
 }

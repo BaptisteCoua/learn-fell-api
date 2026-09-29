@@ -4,9 +4,12 @@ namespace Functional\Reminders\Notifications;
 
 use Functional\Reminders\Domain\DueReminder;
 use Functional\Reminders\Models\ReminderSetting;
+use Functional\Reminders\Support\UnsubscribeLink;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\HtmlString;
 use NotificationChannels\WebPush\WebPushMessage;
+use Symfony\Component\Mime\Email;
 
 /**
  * The reminder of the day (FR-009, FR-011): the cards due today and a link to their session,
@@ -35,16 +38,31 @@ class ReviewReminderNotification extends Notification
         return $this->channels;
     }
 
+    /**
+     * One click unsubscribes from the body and from the mailbox itself (FR-014, FR-015).
+     */
     public function toMail(ReminderSetting $notifiable): MailMessage
     {
         $count = $this->reminder->cardsCount;
+        $links = app(UnsubscribeLink::class);
+        $mailboxLink = $links->forMailbox($notifiable);
 
         return (new MailMessage)
             ->subject(trans_choice('reminders::notifications.review_reminder.subject', $count, ['count' => $count]))
             ->greeting(__('users::notifications.greeting', ['name' => $notifiable->user->display_name]))
             ->line(trans_choice('reminders::notifications.review_reminder.intro', $count, ['count' => $count]))
             ->action(__('reminders::notifications.review_reminder.action'), $this->sessionUrl())
-            ->salutation(__('users::notifications.salutation'));
+            ->line(__('reminders::notifications.review_reminder.why'))
+            ->line(new HtmlString(sprintf(
+                '<a href="%s">%s</a>',
+                e($links->forWebPage($notifiable)),
+                e(__('reminders::notifications.review_reminder.unsubscribe')),
+            )))
+            ->salutation(__('users::notifications.salutation'))
+            ->withSymfonyMessage(function (Email $message) use ($mailboxLink): void {
+                $message->getHeaders()->addTextHeader('List-Unsubscribe', "<{$mailboxLink}>");
+                $message->getHeaders()->addTextHeader('List-Unsubscribe-Post', 'List-Unsubscribe=One-Click');
+            });
     }
 
     public function toWebPush(ReminderSetting $notifiable): WebPushMessage

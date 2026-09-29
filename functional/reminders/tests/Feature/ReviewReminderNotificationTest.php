@@ -5,8 +5,10 @@ namespace Functional\Reminders\Tests\Feature;
 use Functional\Reminders\Domain\DueReminder;
 use Functional\Reminders\Models\ReminderSetting;
 use Functional\Reminders\Notifications\ReviewReminderNotification;
+use Functional\Reminders\Support\UnsubscribeLink;
 use Functional\Users\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Symfony\Component\Mime\Email;
 use Tests\TestCase;
 
 /**
@@ -34,6 +36,26 @@ class ReviewReminderNotificationTest extends TestCase
         $this->assertContains('Vous avez 12 cartes à réviser aujourd’hui. Quelques minutes suffisent.', $mail->introLines);
         $this->assertSame('Réviser maintenant', $mail->actionText);
         $this->assertSame('http://localhost:3000/revisions/seance?sujets=1,2', $mail->actionUrl);
+    }
+
+    public function test_the_email_can_be_unsubscribed_in_one_click_from_its_body_and_its_mailbox(): void
+    {
+        $setting = $this->settingOf('Camille Roux');
+        $links = app(UnsubscribeLink::class);
+
+        $mail = (new ReviewReminderNotification(new DueReminder(12, [1, 2])))->toMail($setting);
+        $email = new Email;
+        foreach ($mail->callbacks as $callback) {
+            $callback($email);
+        }
+
+        $this->assertSame('<'.$links->forMailbox($setting).'>', $email->getHeaders()->get('List-Unsubscribe')?->getBodyAsString());
+        $this->assertSame('List-Unsubscribe=One-Click', $email->getHeaders()->get('List-Unsubscribe-Post')?->getBodyAsString());
+
+        $html = (string) $mail->render();
+        $this->assertStringContainsString('Vous recevez cet email parce que vous avez activé les rappels de révision.', $html);
+        $this->assertStringContainsString('Ne plus recevoir ces rappels', $html);
+        $this->assertStringContainsString(e($links->forWebPage($setting)), $html);
     }
 
     public function test_one_card_is_announced_in_the_singular(): void

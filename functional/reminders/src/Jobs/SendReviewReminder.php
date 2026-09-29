@@ -7,6 +7,7 @@ use Functional\Reminders\Domain\ReminderEligibility;
 use Functional\Reminders\Models\ReminderSend;
 use Functional\Reminders\Models\ReminderSetting;
 use Functional\Reminders\Notifications\ReviewReminderNotification;
+use Functional\Reminders\Support\RecordsEmailBounce;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -14,6 +15,7 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
 use Minishlink\WebPush\MessageSentReport;
 use NotificationChannels\WebPush\WebPushChannel;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 /**
  * Sends the reminder of the day to one account (research R4), if it still has cards due.
@@ -41,7 +43,7 @@ class SendReviewReminder implements ShouldBeUnique, ShouldQueue
         return (string) $this->reminderSettingId;
     }
 
-    public function handle(ReminderEligibility $eligibility): void
+    public function handle(ReminderEligibility $eligibility, RecordsEmailBounce $bounces): void
     {
         $setting = ReminderSetting::query()->with('user')->find($this->reminderSettingId);
 
@@ -58,8 +60,7 @@ class SendReviewReminder implements ShouldBeUnique, ShouldQueue
         $reminder = new DueReminder($send->cards_count, $send->subject_ids);
 
         if ($setting->email_enabled && ! in_array(self::MAIL, $send->channels, true)) {
-            $setting->notifyNow(new ReviewReminderNotification($reminder, [self::MAIL]));
-            $this->markServed($send, self::MAIL);
+            $this->sendEmail($setting, $reminder, $send, $bounces);
         }
 
         if (! in_array(self::WEBPUSH, $send->channels, true) && $this->pushReached($setting, $reminder)) {
@@ -101,6 +102,28 @@ class SendReviewReminder implements ShouldBeUnique, ShouldQueue
         } catch (UniqueConstraintViolationException) {
             return null;
         }
+    }
+
+    /**
+     * A definite refusal (SMTP 5xx) is counted and not tried again; any other failure is
+     * thrown for the queue to retry (research R8).
+     */
+    private function sendEmail(ReminderSetting $setting, DueReminder $reminder, ReminderSend $send, RecordsEmailBounce $bounces): void
+    {
+        try {
+            $setting->notifyNow(new ReviewReminderNotification($reminder, [self::MAIL]));
+        } catch (TransportExceptionInterface $failure) {
+            if ($failure->getCode() < 500 || $failure->getCode() > 599) {
+                throw $failure;
+            }
+
+            $bounces->recordRefusal($setting);
+
+            return;
+        }
+
+        $bounces->recordDelivery($setting);
+        $this->markServed($send, self::MAIL);
     }
 
     /**

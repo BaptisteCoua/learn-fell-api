@@ -32,6 +32,18 @@ class ReminderSetting extends Model
     public const DEFAULT_SEND_TIME = '19:00';
 
     /**
+     * The defaults of the table, so that a row just created reads the same as once reloaded.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'email_enabled' => false,
+        'send_time' => self::DEFAULT_SEND_TIME,
+        'email_bounce_count' => 0,
+        'unsubscribe_version' => 0,
+    ];
+
+    /**
      * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
