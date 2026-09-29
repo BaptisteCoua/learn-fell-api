@@ -5,6 +5,7 @@ namespace Functional\Catalog\Images;
 use Functional\Catalog\Models\QuestionImage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Imagick;
 use Intervention\Image\Drivers\Imagick\Driver;
 use Intervention\Image\Encoders\WebpEncoder;
 use Intervention\Image\Exceptions\DecoderException;
@@ -19,10 +20,19 @@ use Technical\Osdd\Exceptions\BusinessRuleException;
  */
 class QuestionImageProcessor
 {
+    /**
+     * Pixel cache ImageMagick may keep in memory before it spills to disk: an 8,000 px image
+     * decodes to about 512 MB.
+     */
+    private const MEMORY_LIMIT_BYTES = 256 * 1024 * 1024;
+
+    private const MAP_LIMIT_BYTES = 512 * 1024 * 1024;
+
     public function process(UploadedFile $file, QuestionImage $image): void
     {
         $source = $this->decode($file);
         $variantWidths = $this->variantWidths($source->width());
+        $source->scaleDown(width: max($variantWidths));
         $disk = Storage::disk(config('catalog.images.disk'));
         $widest = $source;
 
@@ -42,6 +52,9 @@ class QuestionImageProcessor
 
     private function decode(UploadedFile $file): ImageInterface
     {
+        Imagick::setResourceLimit(Imagick::RESOURCETYPE_MEMORY, self::MEMORY_LIMIT_BYTES);
+        Imagick::setResourceLimit(Imagick::RESOURCETYPE_MAP, self::MAP_LIMIT_BYTES);
+
         try {
             $source = (new ImageManager(new Driver, autoOrientation: true, strip: true))->decodePath($file->getRealPath());
         } catch (DecoderException) {

@@ -130,6 +130,45 @@ class QuestionImageUploadTest extends TestCase
         $this->assertDatabaseCount('question_images', 0);
     }
 
+    public function test_a_5_mb_photo_of_4000_px_is_processed_within_2_seconds(): void
+    {
+        $photo = $this->heavyPhoto(4000, 3000);
+        $this->assertGreaterThan(4 * 1024 * 1024, filesize($photo));
+
+        $startedAt = hrtime(true);
+        $response = $this->upload(User::factory()->create(), new UploadedFile($photo, 'photo.jpg', test: true));
+        $seconds = (hrtime(true) - $startedAt) / 1e9;
+
+        $response->assertCreated()->assertJson(['data' => ['width' => 1600, 'variant_widths' => [480, 960, 1600]]]);
+        $this->assertLessThan(2.0, $seconds, sprintf('Processed in %.2f s.', $seconds));
+    }
+
+    /**
+     * A noisy photo compresses badly: the JPEG quality is lowered until it fits in 5 MB.
+     */
+    private function heavyPhoto(int $width, int $height): string
+    {
+        $photo = new \Imagick;
+        $photo->newPseudoImage($width, $height, 'gradient:#1d4ed8-#facc15');
+        $photo->addNoiseImage(\Imagick::NOISE_GAUSSIAN);
+        $photo->setImageFormat('jpeg');
+        $path = sys_get_temp_dir().'/'.uniqid('photo-', true).'.jpg';
+        $this->beforeApplicationDestroyed(fn () => @unlink($path));
+
+        for ($quality = 98; $quality >= 40; $quality--) {
+            $photo->setImageCompressionQuality($quality);
+            file_put_contents($path, $photo->getImageBlob());
+
+            if (filesize($path) <= config('catalog.images.max_kilobytes') * 1024) {
+                break;
+            }
+        }
+
+        $photo->clear();
+
+        return $path;
+    }
+
     public function test_an_account_sends_30_images_a_minute_at_most(): void
     {
         $user = User::factory()->create();
