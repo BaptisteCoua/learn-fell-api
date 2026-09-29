@@ -3,11 +3,13 @@
 namespace Functional\Learning\Tests\Feature;
 
 use Functional\Catalog\Models\Question;
+use Functional\Catalog\Models\QuestionImage;
 use Functional\Learning\Models\CardProgress;
 use Functional\Learning\Models\ReviewAnswer;
 use Functional\Learning\Tests\Concerns\ReviewsCards;
 use Functional\Users\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -63,6 +65,29 @@ class ReviewSessionTest extends TestCase
             collect($response->json('data'))->pluck('question_id')->all(),
         );
         $this->assertNotEmpty($response->json('data.0.question.recto_html'));
+    }
+
+    public function test_a_card_comes_with_the_images_of_its_recto_in_order(): void
+    {
+        Storage::fake(config('catalog.images.disk'));
+        $user = User::factory()->create();
+        $subject = $this->publishedSubjectWithQuestions(1);
+        $question = $subject->questions()->sole();
+        $second = QuestionImage::factory()->attachedTo($question, 1)->create();
+        $first = QuestionImage::factory()->attachedTo($question, 0)->create();
+        QuestionImage::factory()->pending()->for($user, 'uploader')->create();
+        $this->learn($user, $subject);
+
+        $response = $this->actingAs($user)->postJson('/api/card-progress/search', [
+            'search' => [
+                'instructions' => [['name' => 'due', 'fields' => [['name' => 'subject_ids', 'value' => [$subject->id]]]]],
+                'includes' => [['relation' => 'question.images']],
+            ],
+        ]);
+
+        $response->assertOk();
+        $this->assertSame([$first->id, $second->id], collect($response->json('data.0.question.images'))->pluck('id')->all());
+        $this->assertSame($first->alt, $response->json('data.0.question.images.0.alt'));
     }
 
     public function test_an_unpublished_subject_pauses_its_cards(): void
