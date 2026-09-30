@@ -2,11 +2,13 @@
 
 namespace Functional\Catalog\Rest\Resources;
 
+use Functional\Catalog\Access\Controls\QuestionControl;
 use Functional\Catalog\Enums\SubjectStatus;
 use Functional\Catalog\Models\Question;
 use Functional\Catalog\Models\Subject;
 use Functional\Catalog\Rest\Actions\ReorderQuestions;
 use Functional\Catalog\Rules\VisibleTextLength;
+use Functional\Catalog\Support\RectoImages;
 use Functional\Catalog\Support\RetiredSubjectLock;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +20,7 @@ use Lomkit\Rest\Http\Requests\MutateRequest;
 use Lomkit\Rest\Http\Requests\RestRequest;
 use Lomkit\Rest\Http\Resource;
 use Lomkit\Rest\Relations\BelongsTo;
+use Lomkit\Rest\Relations\HasMany;
 use Lomkit\Rest\Relations\Relation;
 use Technical\Osdd\Exceptions\BusinessRuleException;
 
@@ -45,19 +48,23 @@ class QuestionResource extends Resource
      */
     public function relations(RestRequest $request): array
     {
-        return [BelongsTo::make('subject', SubjectResource::class)];
+        return [
+            BelongsTo::make('subject', SubjectResource::class),
+            HasMany::make('images', QuestionImageResource::class),
+        ];
     }
 
     /**
      * Recto and verso hold rich text (FR-014); the position is set by the API and by the
-     * `reorder` action, and a question never moves to another subject.
+     * `reorder` action, and a question never moves to another subject. A recto may be empty
+     * when it carries images (FR-008, see mutating()).
      *
      * @return array<string, mixed>
      */
     public function rules(RestRequest $request): array
     {
         return [
-            'recto_html' => ['string', 'max:'.self::MAX_HTML_LENGTH, new VisibleTextLength],
+            'recto_html' => ['nullable', 'string', 'max:'.self::MAX_HTML_LENGTH, new VisibleTextLength(allowsEmpty: true)],
             'verso_html' => ['string', 'max:'.self::MAX_HTML_LENGTH, new VisibleTextLength],
             'id' => ['prohibited'],
             'position' => ['prohibited'],
@@ -71,7 +78,7 @@ class QuestionResource extends Resource
     {
         return [
             'subject_id' => ['required', 'integer', Rule::exists('subjects', 'id')],
-            'recto_html' => ['required'],
+            'recto_html' => ['present'],
             'verso_html' => ['required'],
         ];
     }
@@ -85,7 +92,8 @@ class QuestionResource extends Resource
     }
 
     /**
-     * A new question goes last in a subject its author may edit, up to 500 (FR-014).
+     * A new question goes last in a subject its author may edit, up to 500 (FR-014). Its recto
+     * images are checked before anything is written (research R6, R7).
      *
      * @param  array<string, mixed>  $requestBody
      */
@@ -93,10 +101,37 @@ class QuestionResource extends Resource
     {
         if ($model->exists) {
             RetiredSubjectLock::ensureEditable($model->subject);
-
-            return;
+        } else {
+            $this->placeNewQuestion($requestBody, $model);
         }
 
+        $rectoImages = RectoImages::fromMutation($requestBody);
+        $rectoImages->authorize($model);
+
+        $rectoHtml = array_key_exists('recto_html', $requestBody['attributes'] ?? [])
+            ? (string) $requestBody['attributes']['recto_html']
+            : (string) $model->recto_html;
+
+        if (VisibleTextLength::of($rectoHtml) === 0 && $rectoImages->countAfterSave($model) === 0) {
+            throw new BusinessRuleException('recto_empty');
+        }
+    }
+
+    /**
+     * The images the recto no longer carries go in the same transaction (FR-017).
+     *
+     * @param  array<string, mixed>  $requestBody
+     */
+    public function mutated(MutateRequest $request, array $requestBody, Model $model): void
+    {
+        RectoImages::fromMutation($requestBody)->deleteDropped($model);
+    }
+
+    /**
+     * @param  array<string, mixed>  $requestBody
+     */
+    private function placeNewQuestion(array $requestBody, Model $model): void
+    {
         $subject = Subject::query()->findOrFail($requestBody['attributes']['subject_id']);
         Gate::authorize('update', $subject);
         RetiredSubjectLock::ensureEditable($subject);
@@ -145,13 +180,19 @@ class QuestionResource extends Resource
         return ['position' => 'asc'];
     }
 
-    /**
-     * A question follows its subject: published for visitors, QuestionControl otherwise.
-     */
     public function searchQuery(RestRequest $request, Builder $query): Builder
     {
-        return $request->user() === null
+        return self::readableBy($request->user(), $query);
+    }
+
+    /**
+     * A question follows its subject: published for visitors, QuestionControl otherwise. The
+     * images of a question are readable exactly by the same people (FR-016).
+     */
+    public static function readableBy(?Model $user, Builder $query): Builder
+    {
+        return $user === null
             ? $query->whereHas('subject', fn (Builder $subjects): Builder => $subjects->where('status', SubjectStatus::Published))
-            : $query->controlled();
+            : (new QuestionControl)->queried($query, $user);
     }
 }

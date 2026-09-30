@@ -31,6 +31,40 @@ trait WritesCatalog
     }
 
     /**
+     * Saves a question with the full list of its recto images, as the editor does: a create
+     * without a key, an update with one.
+     *
+     * @param  array<string, mixed>  $attributes
+     * @param  list<array<string, mixed>>  $images  from attachImage() and detachImage()
+     */
+    protected function mutateQuestionWithImages(User $user, ?int $key, array $attributes, array $images): TestResponse
+    {
+        $mutation = $key === null
+            ? ['operation' => 'create', 'attributes' => $attributes]
+            : ['operation' => 'update', 'key' => $key, 'attributes' => $attributes];
+
+        return $this->actingAs($user)->postJson('/api/questions/mutate', [
+            'mutate' => [[...$mutation, 'relations' => ['images' => $images]]],
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function attachImage(int $key, ?string $alt, int $position): array
+    {
+        return ['operation' => 'update', 'key' => $key, 'attributes' => ['alt' => $alt, 'position' => $position]];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function detachImage(int $key): array
+    {
+        return ['operation' => 'detach', 'key' => $key];
+    }
+
+    /**
      * @param  list<int>  $keys
      */
     protected function deleteResource(User $user, string $resource, array $keys): TestResponse

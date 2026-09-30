@@ -39,6 +39,23 @@ return [
     'string' => 'Le champ :attribute doit être un texte.',
     'timezone' => 'Le champ :attribute doit être un fuseau horaire valide.',
     'unique' => 'Cette valeur du champ :attribute est déjà utilisée.',
+    'contiguous_positions' => 'Les images d’un recto se suivent à partir de la première place.',
+
+    // Question images (003): the upload field and the description of each attached image.
+    'custom' => [
+        'file' => [
+            'required' => 'Choisissez une image au format JPEG, PNG ou WebP.',
+            'file' => 'Choisissez une image au format JPEG, PNG ou WebP.',
+            'mimes' => 'Choisissez une image au format JPEG, PNG ou WebP.',
+            'max' => 'L’image ne doit pas dépasser 5 Mo.',
+            'dimensions' => 'L’image ne doit pas dépasser 8 000 pixels de côté.',
+        ],
+        'mutate.*.relations.images.*.attributes.alt' => [
+            'required' => 'Décrivez cette image.',
+            'max' => 'La description ne doit pas dépasser 250 caractères.',
+            'not_regex' => 'Décrivez cette image en texte simple, sans balise.',
+        ],
+    ],
 
     // lomkit reports a mutation field as mutate.<n>.attributes.<field>: show the field name.
     'attributes' => (static function (): array {

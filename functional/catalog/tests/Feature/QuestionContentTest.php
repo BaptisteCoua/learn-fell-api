@@ -3,10 +3,13 @@
 namespace Functional\Catalog\Tests\Feature;
 
 use Functional\Catalog\Models\Question;
+use Functional\Catalog\Models\QuestionImage;
 use Functional\Catalog\Models\Subject;
+use Functional\Catalog\Tests\Concerns\SearchesCatalog;
 use Functional\Catalog\Tests\Concerns\WritesCatalog;
 use Functional\Users\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -15,7 +18,7 @@ use Tests\TestCase;
  */
 class QuestionContentTest extends TestCase
 {
-    use RefreshDatabase, WritesCatalog;
+    use RefreshDatabase, SearchesCatalog, WritesCatalog;
 
     private function addQuestion(User $author, Subject $subject, string $recto = '<p>Recto</p>', string $verso = '<p>Verso</p>'): TestResponse
     {
@@ -73,7 +76,13 @@ class QuestionContentTest extends TestCase
 
         $this->addQuestion($author, $subject, '<p> </p>')
             ->assertUnprocessable()
+            ->assertJson(['code' => 'recto_empty']);
+
+        $this->addQuestion($author, $subject, '<p>'.str_repeat('a', 5001).'</p>')
             ->assertJsonValidationErrors(['mutate.0.attributes.recto_html']);
+
+        $this->addQuestion($author, $subject, '<p>Recto</p>', '<p> </p>')
+            ->assertJsonValidationErrors(['mutate.0.attributes.verso_html']);
 
         $this->addQuestion($author, $subject, '<p>Recto</p>', '<p>'.str_repeat('a', 5001).'</p>')
             ->assertJsonValidationErrors(['mutate.0.attributes.verso_html']);
@@ -110,6 +119,44 @@ class QuestionContentTest extends TestCase
 
         $this->reorderQuestions($author, $subject->id, [$questions[0]->id])->assertUnprocessable();
         $this->reorderQuestions(User::factory()->create(), $subject->id, [$questions[1]->id, $questions[0]->id])->assertForbidden();
+    }
+
+    public function test_the_images_of_a_question_come_with_it_in_their_order(): void
+    {
+        Storage::fake(config('catalog.images.disk'));
+        $question = Question::factory()->for(Subject::factory()->published())->create(['position' => 1]);
+        $second = QuestionImage::factory()->attachedTo($question, 1)->create();
+        $first = QuestionImage::factory()->attachedTo($question, 0)->create();
+
+        $response = $this->searchResource('questions', [
+            'filters' => [['field' => 'id', 'value' => $question->id]],
+            'includes' => [['relation' => 'images']],
+        ]);
+
+        $response->assertOk();
+        $this->assertSame([$first->id, $second->id], collect($response->json('data.0.images'))->pluck('id')->all());
+        $this->assertSame(
+            ['id', 'question_id', 'alt', 'position', 'width', 'height', 'variant_widths'],
+            array_keys($response->json('data.0.images.0')),
+        );
+    }
+
+    public function test_images_written_in_rich_text_are_removed(): void
+    {
+        $author = User::factory()->create();
+        $subject = Subject::factory()->for($author, 'author')->create();
+
+        $this->addQuestion(
+            $author,
+            $subject,
+            '<p>Quel oiseau ? <img src="https://exemple.test/x.png"></p>',
+            '<p>Un hibou <img src="https://exemple.test/x.png" alt="x"></p>',
+        )->assertOk();
+
+        $question = $subject->questions()->sole();
+        $this->assertStringNotContainsString('<img', $question->recto_html);
+        $this->assertStringNotContainsString('<img', $question->verso_html);
+        $this->assertStringNotContainsString('exemple.test', $question->recto_html.$question->verso_html);
     }
 
     public function test_editing_a_question_is_visible_at_once(): void
