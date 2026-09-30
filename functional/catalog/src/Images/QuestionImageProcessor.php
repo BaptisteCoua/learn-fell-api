@@ -28,7 +28,26 @@ class QuestionImageProcessor
 
     private const MAP_LIMIT_BYTES = 512 * 1024 * 1024;
 
+    /**
+     * ImageMagick's limits hold for the whole PHP process, so they are lowered for this image
+     * alone and put back afterwards.
+     */
     public function process(UploadedFile $file, QuestionImage $image): void
+    {
+        $previousMemoryLimit = (int) Imagick::getResourceLimit(Imagick::RESOURCETYPE_MEMORY);
+        $previousMapLimit = (int) Imagick::getResourceLimit(Imagick::RESOURCETYPE_MAP);
+        Imagick::setResourceLimit(Imagick::RESOURCETYPE_MEMORY, self::MEMORY_LIMIT_BYTES);
+        Imagick::setResourceLimit(Imagick::RESOURCETYPE_MAP, self::MAP_LIMIT_BYTES);
+
+        try {
+            $this->writeVariants($file, $image);
+        } finally {
+            Imagick::setResourceLimit(Imagick::RESOURCETYPE_MEMORY, $previousMemoryLimit);
+            Imagick::setResourceLimit(Imagick::RESOURCETYPE_MAP, $previousMapLimit);
+        }
+    }
+
+    private function writeVariants(UploadedFile $file, QuestionImage $image): void
     {
         $source = $this->decode($file);
         $variantWidths = $this->variantWidths($source->width());
@@ -52,9 +71,6 @@ class QuestionImageProcessor
 
     private function decode(UploadedFile $file): ImageInterface
     {
-        Imagick::setResourceLimit(Imagick::RESOURCETYPE_MEMORY, self::MEMORY_LIMIT_BYTES);
-        Imagick::setResourceLimit(Imagick::RESOURCETYPE_MAP, self::MAP_LIMIT_BYTES);
-
         try {
             $source = (new ImageManager(new Driver, autoOrientation: true, strip: true))->decodePath($file->getRealPath());
         } catch (DecoderException) {

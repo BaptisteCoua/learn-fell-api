@@ -143,4 +143,23 @@ class QuestionImageProcessorTest extends TestCase
 
         $this->assertSame([], Storage::disk(config('catalog.images.disk'))->allFiles());
     }
+
+    public function test_the_memory_limits_of_imagemagick_last_only_while_an_image_is_processed(): void
+    {
+        $limits = fn (): array => [
+            Imagick::getResourceLimit(Imagick::RESOURCETYPE_MEMORY),
+            Imagick::getResourceLimit(Imagick::RESOURCETYPE_MAP),
+        ];
+        $before = $limits();
+
+        $this->process($this->fixture('photo.webp'));
+        $this->assertSame($before, $limits());
+
+        try {
+            $this->process($this->fixture('animated.gif'));
+        } catch (BusinessRuleException) {
+        }
+
+        $this->assertSame($before, $limits());
+    }
 }
