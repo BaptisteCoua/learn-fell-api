@@ -39,6 +39,7 @@ return [
     'string' => 'Le champ :attribute doit être un texte.',
     'timezone' => 'Le champ :attribute doit être un fuseau horaire valide.',
     'unique' => 'Cette valeur du champ :attribute est déjà utilisée.',
+    'contiguous_positions' => 'Les images d’un recto se suivent à partir de la première place.',
 
     // Question images (003): the upload field and the description of each attached image.
     'custom' => [
@@ -52,6 +53,7 @@ return [
         'mutate.*.relations.images.*.attributes.alt' => [
             'required' => 'Décrivez cette image.',
             'max' => 'La description ne doit pas dépasser 250 caractères.',
+            'not_regex' => 'Décrivez cette image en texte simple, sans balise.',
         ],
     ],
 

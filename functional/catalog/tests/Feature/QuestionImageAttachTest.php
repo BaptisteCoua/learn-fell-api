@@ -119,6 +119,7 @@ class QuestionImageAttachTest extends TestCase
             'missing' => [null, 'Décrivez cette image.'],
             'blank' => ['   ', 'Décrivez cette image.'],
             '251 characters' => [str_repeat('a', 251), 'La description ne doit pas dépasser 250 caractères.'],
+            'html tags' => ['<b>Hibou</b> <img src="x">', 'Décrivez cette image en texte simple, sans balise.'],
         ];
     }
 
@@ -153,7 +154,33 @@ class QuestionImageAttachTest extends TestCase
             $this->attachImage($first->id, 'Hibou de face', 4),
         ])->assertUnprocessable()->assertJsonValidationErrors(['mutate.0.relations.images.0.attributes.position']);
 
+        $this->mutateQuestionWithImages($this->author, $question->id, [], [
+            $this->attachImage($first->id, 'Hibou de face', -1),
+        ])->assertUnprocessable()->assertJsonValidationErrors(['mutate.0.relations.images.0.attributes.position']);
+
         $this->assertSame(0, $question->images()->count());
+    }
+
+    public function test_positions_follow_each_other_from_the_first(): void
+    {
+        $question = $this->questionWithImages(0);
+        [$first, $second] = [$this->pendingImageOf($this->author), $this->pendingImageOf($this->author)];
+
+        $this->mutateQuestionWithImages($this->author, $question->id, [], [
+            $this->attachImage($first->id, 'Hibou de face', 0),
+            $this->attachImage($second->id, 'Hibou en vol', 3),
+        ])->assertUnprocessable()->assertJsonValidationErrors([
+            'mutate.0.relations.images.1.attributes.position' => 'Les images d’un recto se suivent à partir de la première place.',
+        ]);
+
+        $this->assertSame(0, $question->images()->count());
+
+        $this->mutateQuestionWithImages($this->author, $question->id, [], [
+            $this->attachImage($first->id, 'Hibou de face', 1),
+            $this->attachImage($second->id, 'Hibou en vol', 0),
+        ])->assertSuccessful();
+
+        $this->assertSame([$second->id, $first->id], $question->images()->pluck('id')->all());
     }
 
     public function test_a_recto_may_hold_images_only(): void

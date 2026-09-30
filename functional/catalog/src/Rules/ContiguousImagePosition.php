@@ -8,10 +8,11 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Str;
 
 /**
- * Two images of one recto never share a position (FR-005). lomkit validates each element of
- * `relations.images` on its own, so the rule reads its siblings from the request.
+ * The images of one recto hold the positions 0 to n-1, each once (FR-005, data-model). lomkit
+ * validates each element of `relations.images` on its own, so the rule reads its siblings from
+ * the request.
  */
-class DistinctImagePosition implements DataAwareRule, ValidationRule
+class ContiguousImagePosition implements DataAwareRule, ValidationRule
 {
     /**
      * @var array<string, mixed>
@@ -32,12 +33,21 @@ class DistinctImagePosition implements DataAwareRule, ValidationRule
     {
         $siblings = data_get($this->data, Str::beforeLast(Str::beforeLast($attribute, '.attributes.'), '.'), []);
 
-        $samePosition = collect($siblings)->filter(fn (mixed $sibling): bool => is_array($sibling)
-            && ($sibling['operation'] ?? null) === 'update'
-            && (string) ($sibling['attributes']['position'] ?? '') === (string) $value);
+        $keptImages = collect($siblings)->filter(fn (mixed $sibling): bool => is_array($sibling)
+            && ($sibling['operation'] ?? null) === 'update');
+
+        $samePosition = $keptImages->filter(
+            fn (array $sibling): bool => (string) ($sibling['attributes']['position'] ?? '') === (string) $value,
+        );
 
         if ($samePosition->count() > 1) {
             $fail('validation.distinct')->translate();
+
+            return;
+        }
+
+        if ((int) $value >= $keptImages->count()) {
+            $fail('validation.contiguous_positions')->translate();
         }
     }
 }

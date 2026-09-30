@@ -3,7 +3,7 @@
 namespace Functional\Catalog\Rest\Resources;
 
 use Functional\Catalog\Models\QuestionImage;
-use Functional\Catalog\Rules\DistinctImagePosition;
+use Functional\Catalog\Rules\ContiguousImagePosition;
 use Functional\Catalog\Rules\WithinRectoImageLimit;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Lomkit\Rest\Http\Requests\RestRequest;
@@ -42,22 +42,22 @@ class QuestionImageResource extends Resource
     }
 
     /**
-     * Each image of a recto is described (FR-004) and placed (FR-005), 4 images at most
-     * (FR-003).
+     * Each image of a recto is described in plain text (FR-004, research R7) and placed
+     * (FR-005), 4 images at most (FR-003).
      *
      * @return array<string, mixed>
      */
     public function updateRules(RestRequest $request): array
     {
         return [
-            'alt' => ['required', 'string', 'max:250'],
+            'alt' => ['required', 'string', 'max:250', 'not_regex:/<\/?[a-z!][^>]*>/i'],
             'position' => [
                 new WithinRectoImageLimit,
                 'required',
                 'integer',
                 'min:0',
                 'max:'.(config('catalog.images.max_per_recto') - 1),
-                new DistinctImagePosition,
+                new ContiguousImagePosition,
             ],
         ];
     }
