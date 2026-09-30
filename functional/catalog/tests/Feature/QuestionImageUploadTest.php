@@ -133,7 +133,9 @@ class QuestionImageUploadTest extends TestCase
     public function test_a_5_mb_photo_of_4000_px_is_processed_within_2_seconds(): void
     {
         $photo = $this->heavyPhoto(4000, 3000);
-        $this->assertGreaterThan(4 * 1024 * 1024, filesize($photo));
+        $maxBytes = config('catalog.images.max_kilobytes') * 1024;
+        $this->assertGreaterThanOrEqual(0.95 * $maxBytes, filesize($photo));
+        $this->assertLessThanOrEqual($maxBytes, filesize($photo));
 
         $startedAt = hrtime(true);
         $response = $this->upload(User::factory()->create(), new UploadedFile($photo, 'photo.jpg', test: true));
