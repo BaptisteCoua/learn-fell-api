@@ -1,6 +1,7 @@
 <?php
 
 use Functional\Learning\Http\Controllers\AuthoredSubjectsSummaryController;
+use Functional\Learning\Http\Controllers\SubjectLearnersController;
 use Functional\Learning\Rest\Controllers\CardProgressController;
 use Functional\Learning\Rest\Controllers\LearningsController;
 use Illuminate\Support\Facades\Route;
@@ -13,4 +14,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::get('learning/authored-subjects-summary', AuthoredSubjectsSummaryController::class)
         ->name('learning.authored-subjects-summary');
+
+    Route::get('learning/subjects/{subject}/learners', SubjectLearnersController::class)
+        ->name('learning.subject-learners');
 });
