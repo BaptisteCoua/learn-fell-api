@@ -54,6 +54,9 @@ class LearnSubjectTest extends TestCase
 
     public function test_the_learnings_count_their_cards_and_belong_to_their_learner(): void
     {
+        // Noon UTC is the same day in Europe/Paris, the timezone of the accounts the factory creates.
+        $this->travelTo(today()->setTime(12, 0));
+
         $user = User::factory()->create();
         $subject = $this->publishedSubjectWithQuestions(3);
         $this->learn($user, $subject);

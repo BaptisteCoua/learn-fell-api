@@ -31,6 +31,9 @@ class ReviewSessionTest extends TestCase
 
     public function test_the_due_cards_are_those_of_the_chosen_subjects_most_overdue_first(): void
     {
+        // Noon UTC is the same day in Europe/Paris, the timezone of the accounts the factory creates.
+        $this->travelTo(today()->setTime(12, 0));
+
         $user = User::factory()->create();
         $chosen = $this->publishedSubjectWithQuestions(3);
         $other = $this->publishedSubjectWithQuestions(2);
@@ -170,6 +173,9 @@ class ReviewSessionTest extends TestCase
 
     public function test_the_card_shows_where_it_went_after_an_answer(): void
     {
+        // Noon UTC is the same day in Europe/Paris, the timezone of the accounts the factory creates.
+        $this->travelTo(today()->setTime(12, 0));
+
         $user = User::factory()->create();
         $subject = $this->publishedSubjectWithQuestions(1);
         $this->learn($user, $subject);
