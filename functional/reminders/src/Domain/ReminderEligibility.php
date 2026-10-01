@@ -20,7 +20,8 @@ class ReminderEligibility
     {
         $learner = $setting->user;
 
-        if (! $learner->hasVerifiedEmail() || ! $setting->hasActiveChannel()) {
+        // An account whose deletion is pending keeps its settings for a cancellation (feature 004).
+        if (! $learner->hasVerifiedEmail() || $learner->isPendingDeletion() || ! $setting->hasActiveChannel()) {
             return null;
         }
 

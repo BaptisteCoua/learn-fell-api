@@ -32,4 +32,15 @@ class UserFactory extends Factory
     {
         return $this->state(['email_verified_at' => null]);
     }
+
+    /**
+     * An account whose deletion was requested, `$daysAgo` days ago (feature 004).
+     */
+    public function pendingDeletion(?bool $keepsPublishedSubjects = null, int $daysAgo = 0): static
+    {
+        return $this->state(fn (): array => [
+            'deletion_requested_at' => now()->subDays($daysAgo),
+            'keeps_published_subjects' => $keepsPublishedSubjects,
+        ]);
+    }
 }

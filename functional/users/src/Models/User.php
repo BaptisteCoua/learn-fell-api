@@ -2,6 +2,7 @@
 
 namespace Functional\Users\Models;
 
+use Carbon\CarbonImmutable;
 use Functional\Users\Database\Factories\UserFactory;
 use Functional\Users\Notifications\ResetPasswordNotification;
 use Functional\Users\Notifications\VerifyEmailNotification;
@@ -23,6 +24,34 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, HasRoles, Notifiable, Prunable;
+
+    /**
+     * Days between a deletion request and the erasure, during which logging in cancels it.
+     */
+    public const DELETION_GRACE_DAYS = 30;
+
+    public function isPendingDeletion(): bool
+    {
+        return $this->deletion_requested_at !== null;
+    }
+
+    /**
+     * The day the account will be erased, in its own time zone.
+     */
+    public function eraseOn(): CarbonImmutable
+    {
+        return CarbonImmutable::parse($this->deletion_requested_at ?? now())
+            ->addDays(self::DELETION_GRACE_DAYS)
+            ->setTimezone($this->timezone);
+    }
+
+    /**
+     * The account's own name, for the emails it receives even while its name is hidden.
+     */
+    public function ownDisplayName(): string
+    {
+        return $this->attributes['display_name'];
+    }
 
     /**
      * Accounts never confirmed within 7 days are removed, which frees their address.
@@ -50,6 +79,19 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Hidden from everyone once a deletion is requested (feature 004, FR-011): authors become
+     * « Auteur supprimé », reporters and moderators « Compte supprimé » on the web.
+     *
+     * @return Attribute<string|null, string>
+     */
+    protected function displayName(): Attribute
+    {
+        return Attribute::make(
+            get: fn (string $displayName, array $attributes): ?string => ($attributes['deletion_requested_at'] ?? null) === null ? $displayName : null,
+        );
+    }
+
+    /**
      * Emails are stored lower-cased so their uniqueness ignores case.
      *
      * @return Attribute<string, string>
@@ -67,6 +109,8 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'deletion_requested_at' => 'datetime',
+            'keeps_published_subjects' => 'boolean',
         ];
     }
 }

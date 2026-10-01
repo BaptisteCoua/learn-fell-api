@@ -30,7 +30,7 @@ class ResetPasswordNotification extends Notification
 
         return (new MailMessage)
             ->subject(__('users::notifications.reset_password.subject'))
-            ->greeting(__('users::notifications.greeting', ['name' => $notifiable->display_name]))
+            ->greeting(__('users::notifications.greeting', ['name' => $notifiable->ownDisplayName()]))
             ->line(__('users::notifications.reset_password.intro'))
             ->action(__('users::notifications.reset_password.action'), $resetUrl)
             ->line(__('users::notifications.reset_password.expiry', ['minutes' => config('auth.passwords.users.expire')]))

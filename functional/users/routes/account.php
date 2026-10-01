@@ -1,5 +1,6 @@
 <?php
 
+use Functional\Users\Http\Controllers\AccountDeletionController;
 use Functional\Users\Http\Controllers\ResendVerificationEmailController;
 use Functional\Users\Http\Controllers\VerifyEmailController;
 use Functional\Users\Support\EmailVerificationLink;
@@ -17,3 +18,10 @@ Route::get('email/verify/{id}/{hash}', VerifyEmailController::class)
 Route::post('email/verification-notification', ResendVerificationEmailController::class)
     ->middleware('throttle:6,1')
     ->name('users.verification.send');
+
+Route::middleware('auth:sanctum')->group(function (): void {
+    Route::get('account/deletion', [AccountDeletionController::class, 'show'])->name('users.deletion.show');
+    Route::post('account/deletion', [AccountDeletionController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('users.deletion.store');
+});
