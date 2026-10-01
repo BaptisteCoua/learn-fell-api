@@ -5,6 +5,7 @@ namespace Functional\Users\Actions;
 use Functional\Users\Events\AccountDeletionRequested;
 use Functional\Users\Models\User;
 use Functional\Users\Notifications\AccountDeletionRequestedNotification;
+use Functional\Users\Support\LastAdministratorGuard;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -16,8 +17,12 @@ use Illuminate\Validation\ValidationException;
  */
 class RequestAccountDeletion
 {
+    public function __construct(private readonly LastAdministratorGuard $lastAdministratorGuard) {}
+
     public function __invoke(User $user, string $password, ?bool $keepsPublishedSubjects): void
     {
+        $this->lastAdministratorGuard->ensureCanLeave($user);
+
         if (! Hash::check($password, $user->password)) {
             throw ValidationException::withMessages(['password' => __('users::account.wrong_password')]);
         }

@@ -4,6 +4,7 @@ namespace Functional\Users\Http\Controllers;
 
 use Functional\Users\Actions\RequestAccountDeletion;
 use Functional\Users\Models\User;
+use Functional\Users\Support\LastAdministratorGuard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,14 +15,15 @@ use Illuminate\Support\Facades\Auth;
  */
 class AccountDeletionController
 {
-    public function show(Request $request): JsonResponse
+    public function show(Request $request, LastAdministratorGuard $lastAdministratorGuard): JsonResponse
     {
         /** @var User $user */
         $user = $request->user();
+        $isLastAdministrator = $lastAdministratorGuard->isLastAdministrator($user);
 
         return new JsonResponse([
-            'can_request' => true,
-            'blocked_reason' => null,
+            'can_request' => ! $isLastAdministrator,
+            'blocked_reason' => $isLastAdministrator ? 'last_admin' : null,
             'erase_on' => $user->eraseOn()->toDateString(),
         ]);
     }
