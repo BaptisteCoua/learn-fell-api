@@ -7,6 +7,7 @@ use Functional\Catalog\Rest\Resources\SubjectResource;
 use Functional\Learning\Models\CardProgress;
 use Functional\Learning\Rest\Actions\AnswerCard;
 use Functional\Learning\Rest\Instructions\DueCardsInstruction;
+use Functional\Learning\Rest\Instructions\UpcomingCardsInstruction;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Lomkit\Rest\Actions\Action;
 use Lomkit\Rest\Http\Requests\RestRequest;
@@ -45,7 +46,7 @@ class CardProgressResource extends Resource
      */
     public function instructions(RestRequest $request): array
     {
-        return [DueCardsInstruction::make()];
+        return [DueCardsInstruction::make(), UpcomingCardsInstruction::make()];
     }
 
     /**
