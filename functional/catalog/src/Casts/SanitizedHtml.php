@@ -29,7 +29,16 @@ class SanitizedHtml implements CastsAttributes
      */
     public function set(Model $model, string $key, mixed $value, array $attributes): string
     {
-        $cleanHtml = Purify::clean((string) $value);
+        return self::clean((string) $value);
+    }
+
+    /**
+     * The same cleaning outside a model: the preview of an import shows exactly what will be
+     * saved (specs/008-question-import, FR-027).
+     */
+    public static function clean(?string $html): string
+    {
+        $cleanHtml = Purify::clean((string) $html);
 
         return str_replace('<a href=', '<a rel="'.self::LINK_REL.'" href=', $cleanHtml);
     }
