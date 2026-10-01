@@ -24,7 +24,11 @@ class UnsubscribeController
 
         $setting = ReminderSetting::query()->with('user')->where('user_id', $id)->first();
 
-        if ($setting === null || (string) $setting->unsubscribe_version !== (string) $request->query('v')) {
+        // An account whose deletion is pending answers like an erased one, and keeps its
+        // settings for a cancellation (feature 004).
+        if ($setting === null
+            || $setting->user->isPendingDeletion()
+            || (string) $setting->unsubscribe_version !== (string) $request->query('v')) {
             throw new BusinessRuleException('invalid_link', 403);
         }
 

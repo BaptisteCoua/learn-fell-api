@@ -25,6 +25,8 @@ Laravel 13 backend of CINQ, consumed by the `web` repo (Nuxt PWA). Part of the
 
 Review reminders (`functional/reminders`) need VAPID keys for web push: `./vendor/bin/sail artisan webpush:vapid` writes them into `.env`, and the web app needs the same public key as `NUXT_PUBLIC_VAPID_PUBLIC_KEY`. Keep the keys once devices have subscribed: new keys lose every device. To send the reminders of a given minute without waiting, `./vendor/bin/sail artisan reminders:dispatch --now="2026-09-26 17:00"` (UTC) sends them right away, outside the queue.
 
+Account deletion (`functional/users`) is erased by that same daily `model:prune`: an account whose deletion was requested more than 30 days ago (`users.deletion_requested_at`) is deleted in one transaction, each layer erasing or detaching its data on `eloquent.deleting: User`. To erase one without waiting, move its `deletion_requested_at` back 31 days, then `./vendor/bin/sail artisan model:prune --model="Functional\Users\Models\User"`.
+
 Every `php`, `composer`, `artisan` and `npm` command goes through `./vendor/bin/sail`.
 
 ## Test

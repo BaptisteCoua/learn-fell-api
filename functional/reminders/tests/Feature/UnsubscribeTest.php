@@ -33,6 +33,22 @@ class UnsubscribeTest extends TestCase
         $this->assertNull($setting->next_reminder_at);
     }
 
+    public function test_the_link_of_an_account_being_deleted_or_erased_is_not_valid(): void
+    {
+        $pending = ReminderSetting::factory()->emailEnabled()->create();
+        $pendingLink = $this->mailboxLink($pending);
+        $pending->user->forceFill(['deletion_requested_at' => now()])->save();
+        $erased = ReminderSetting::factory()->emailEnabled()->create();
+        $erasedLink = $this->mailboxLink($erased);
+        $erased->user->delete();
+
+        $pendingAnswer = $this->post($pendingLink)->assertForbidden();
+        $erasedAnswer = $this->post($erasedLink)->assertForbidden();
+
+        $this->assertSame($erasedAnswer->json(), $pendingAnswer->json());
+        $this->assertTrue($pending->fresh()->email_enabled);
+    }
+
     public function test_the_same_link_used_twice_answers_the_same(): void
     {
         $setting = ReminderSetting::factory()->emailEnabled()->create();
