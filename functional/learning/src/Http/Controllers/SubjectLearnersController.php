@@ -6,6 +6,7 @@ use Functional\Catalog\Models\Subject;
 use Functional\Learning\Models\Learning;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * specs/008-question-import, FR-019 — whether anyone learns a subject, its author included: the
@@ -16,6 +17,11 @@ class SubjectLearnersController
 {
     public function __invoke(Subject $subject): JsonResponse
     {
+        // A subject the user may not read is not found, so a draft never reveals it exists (principle VI).
+        if (Gate::denies('view', $subject)) {
+            throw new NotFoundHttpException;
+        }
+
         Gate::authorize('update', $subject);
 
         return new JsonResponse([

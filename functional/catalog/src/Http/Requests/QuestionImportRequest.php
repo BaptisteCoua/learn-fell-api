@@ -4,7 +4,10 @@ namespace Functional\Catalog\Http\Requests;
 
 use Functional\Catalog\Import\ImportSource;
 use Functional\Catalog\Import\SourceReader;
+use Functional\Catalog\Models\Subject;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * The source of an import: a file, or a pasted text, never both (specs/008-question-import,
@@ -13,6 +16,22 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class QuestionImportRequest extends FormRequest
 {
+    /**
+     * Checked before the body: a subject the user may not read answers as one that does not
+     * exist, whatever is sent, so a draft never reveals it exists (principle VI).
+     */
+    public function authorize(): bool
+    {
+        $subject = $this->route('subject');
+
+        return $subject instanceof Subject && Gate::allows('view', $subject);
+    }
+
+    protected function failedAuthorization(): never
+    {
+        throw new NotFoundHttpException;
+    }
+
     /**
      * @return array<string, mixed>
      */

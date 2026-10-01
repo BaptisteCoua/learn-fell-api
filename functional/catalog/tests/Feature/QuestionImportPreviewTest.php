@@ -8,6 +8,7 @@ use Functional\Catalog\Tests\Concerns\MakesImportSources;
 use Functional\Users\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -68,6 +69,18 @@ class QuestionImportPreviewTest extends TestCase
         $status = $this->previewImport(User::factory()->create(), $subject, ['file' => $this->referenceXlsx()])->status();
 
         $this->assertContains($status, [403, 404]);
+    }
+
+    public function test_the_draft_of_someone_else_is_not_found_whatever_is_sent(): void
+    {
+        $draft = Subject::factory()->create();
+        $stranger = User::factory()->create();
+
+        $this->previewImport($stranger, $draft, ['file' => $this->referenceXlsx()])->assertNotFound();
+        $this->previewImport($stranger, $draft, [])->assertNotFound();
+        $this->confirmImport($stranger, $draft, ['text' => "Pérou\tLima", 'import_id' => (string) Str::uuid()])->assertNotFound();
+        $this->confirmImport($stranger, $draft, [])->assertNotFound();
+        $this->assertSame(0, $draft->questions()->count());
     }
 
     public function test_the_author_of_a_retired_subject_cannot_import_into_it(): void

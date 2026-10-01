@@ -58,6 +58,11 @@ class SubjectLearnersTest extends TestCase
         $this->hasLearners(User::factory()->create()->assignRole('admin'), $subject)->assertOk();
     }
 
+    public function test_the_draft_of_someone_else_is_not_found(): void
+    {
+        $this->hasLearners(User::factory()->create(), Subject::factory()->create())->assertNotFound();
+    }
+
     public function test_nobody_else_may_ask(): void
     {
         $subject = $this->publishedSubjectWithQuestions(1);
