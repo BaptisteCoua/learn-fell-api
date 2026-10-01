@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 /**
- * FR-001, FR-002 — scenarios 1, 2 and 6 of user story 2.
+ * FR-001, FR-002 — scenarios 1 and 2 of user story 2; feature 005 replaces scenario 6.
  */
 class RegistrationTest extends TestCase
 {
@@ -78,22 +78,55 @@ class RegistrationTest extends TestCase
         $response->assertUnprocessable()->assertJsonValidationErrors(['password']);
     }
 
-    public function test_an_address_of_an_active_account_invites_to_log_in(): void
+    /**
+     * Feature 005, FR-001 and SC-001 — the four kinds of address get the very same answer.
+     */
+    public function test_a_valid_registration_gets_the_same_answer_whatever_the_address(): void
     {
-        User::factory()->create(['email' => 'camille@exemple.fr']);
+        Notification::fake();
+        User::factory()->create(['email' => 'confirme@exemple.fr']);
+        User::factory()->pendingDeletion()->create(['email' => 'supprime@exemple.fr']);
+        User::factory()->unverified()->create(['email' => 'attente@exemple.fr']);
 
-        $response = $this->postJson('/api/register', $this->registration());
+        $answers = collect(['libre@exemple.fr', 'confirme@exemple.fr', 'supprime@exemple.fr', 'attente@exemple.fr'])
+            ->map(function (string $email): array {
+                $response = $this->postJson('/api/register', $this->registration(['email' => $email]));
 
-        $response->assertUnprocessable()->assertJson(['code' => 'email_taken']);
-        $this->assertDatabaseCount('users', 1);
+                return [$response->status(), $response->json()];
+            });
+
+        $this->assertSame(1, $answers->unique(fn (array $answer): string => json_encode($answer))->count());
+        $this->assertSame([201, ['message' => 'Si cette adresse peut être utilisée, un lien de confirmation vient d’y être envoyé.']], $answers->first());
+        $this->assertGuest('web');
     }
 
-    public function test_an_address_waiting_for_confirmation_offers_a_new_link(): void
+    public function test_an_address_with_other_capitals_is_the_same_address(): void
     {
-        User::factory()->unverified()->create(['email' => 'camille@exemple.fr']);
+        Notification::fake();
+        $confirmed = User::factory()->create(['email' => 'camille@exemple.fr', 'display_name' => 'Camille']);
 
-        $response = $this->postJson('/api/register', $this->registration());
+        $this->postJson('/api/register', $this->registration(['email' => 'CAMILLE@Exemple.FR']))->assertCreated();
 
-        $response->assertUnprocessable()->assertJson(['code' => 'email_pending_verification']);
+        $this->assertDatabaseCount('users', 1);
+        $this->assertSame('Camille', $confirmed->fresh()->display_name);
+        Notification::assertNothingSent();
+    }
+
+    /**
+     * Feature 005, FR-007 — input errors do not depend on whether the address has an account.
+     */
+    public function test_input_errors_are_the_same_for_a_free_and_a_taken_address(): void
+    {
+        Notification::fake();
+        User::factory()->create(['email' => 'prise@exemple.fr']);
+        $invalid = ['display_name' => 'C', 'password' => 'court', 'password_confirmation' => 'court'];
+
+        $free = $this->postJson('/api/register', $this->registration([...$invalid, 'email' => 'libre@exemple.fr']));
+        $taken = $this->postJson('/api/register', $this->registration([...$invalid, 'email' => 'prise@exemple.fr']));
+
+        $free->assertUnprocessable()->assertJsonValidationErrors(['display_name', 'password']);
+        $this->assertSame($free->json(), $taken->json());
+        $this->assertDatabaseCount('users', 1);
+        Notification::assertNothingSent();
     }
 }

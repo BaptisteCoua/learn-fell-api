@@ -1,6 +1,7 @@
 <?php
 
 use Functional\Users\Http\Controllers\AccountDeletionController;
+use Functional\Users\Http\Controllers\RegisterController;
 use Functional\Users\Http\Controllers\ResendVerificationEmailController;
 use Functional\Users\Http\Controllers\VerifyEmailController;
 use Functional\Users\Support\EmailVerificationLink;
@@ -9,6 +10,8 @@ use Illuminate\Support\Facades\Route;
 /*
 | Account routes next to Fortify's: same `web` session middleware, same `/api` prefix.
 */
+
+Route::post('register', RegisterController::class)->name('users.register');
 
 Route::get('email/verify/{id}/{hash}', VerifyEmailController::class)
     ->middleware('throttle:6,1')

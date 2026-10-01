@@ -4,8 +4,9 @@ use Laravel\Fortify\Features;
 
 /*
 | Headless Fortify: JSON endpoints under /api for the web app, no views.
-| Only registration and password reset are enabled; email confirmation has its own routes
-| in routes/account.php, since Fortify's require a logged-in account.
+| Only login and password reset are Fortify's; registration and email confirmation have their
+| own routes in routes/account.php: Fortify logs in the account it registers, and its
+| confirmation routes require a logged-in account.
 */
 
 return [
@@ -80,8 +81,9 @@ return [
         'user_handle_secret' => env('PASSKEYS_USER_HANDLE_SECRET', config('app.key')),
         'timeout' => 60000,
     ],
+    // Registration is the users layer's own route (feature 005): Fortify's logs in the account
+    // it is given, which an address already taken must never do.
     'features' => [
-        Features::registration(),
         Features::resetPasswords(),
     ],
 ];

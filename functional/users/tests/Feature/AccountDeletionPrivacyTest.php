@@ -30,8 +30,8 @@ class AccountDeletionPrivacyTest extends TestCase
         User::factory()->pendingDeletion()->create(['email' => 'camille@exemple.fr']);
         User::factory()->create(['email' => 'dominique@exemple.fr']);
 
-        $pending = $this->register('camille@exemple.fr')->assertUnprocessable();
-        $active = $this->register('dominique@exemple.fr')->assertUnprocessable();
+        $pending = $this->register('camille@exemple.fr')->assertCreated();
+        $active = $this->register('dominique@exemple.fr')->assertCreated();
 
         $this->assertSame($active->json(), $pending->json());
     }

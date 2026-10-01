@@ -3,14 +3,12 @@
 namespace Functional\Users\Providers;
 
 use Functional\Users\Actions\AuthenticateUser;
-use Functional\Users\Actions\CreateNewUser;
 use Functional\Users\Actions\EnsureAccountIsNotLocked;
 use Functional\Users\Actions\ResetUserPassword;
 use Functional\Users\Http\Responses\FailedPasswordResetResponse;
 use Functional\Users\Http\Responses\LoginResponse;
 use Functional\Users\Http\Responses\PasswordResetLinkResponse;
 use Functional\Users\Http\Responses\PasswordResetResponse;
-use Functional\Users\Http\Responses\RegisteredResponse;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -22,13 +20,13 @@ use Laravel\Fortify\Contracts\FailedPasswordResetLinkRequestResponse;
 use Laravel\Fortify\Contracts\FailedPasswordResetResponse as FailedPasswordResetResponseContract;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 use Laravel\Fortify\Contracts\PasswordResetResponse as PasswordResetResponseContract;
-use Laravel\Fortify\Contracts\RegisterResponse;
 use Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse;
 use Laravel\Fortify\Fortify;
 
 /**
- * Wires Fortify's account flows (registration, login, password reset) to the users layer.
- * Email confirmation has its own routes (routes/account.php): Fortify's need a session.
+ * Wires Fortify's account flows (login, password reset) to the users layer. Registration and
+ * email confirmation have their own routes (routes/account.php): Fortify logs in the account it
+ * registers, and its confirmation routes need a session.
  */
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -37,14 +35,12 @@ class FortifyServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Bound in boot: Fortify registers its own responses after this provider's register().
-        $this->app->singleton(RegisterResponse::class, RegisteredResponse::class);
         $this->app->singleton(LoginResponseContract::class, LoginResponse::class);
         $this->app->singleton(SuccessfulPasswordResetLinkRequestResponse::class, PasswordResetLinkResponse::class);
         $this->app->singleton(FailedPasswordResetLinkRequestResponse::class, PasswordResetLinkResponse::class);
         $this->app->singleton(PasswordResetResponseContract::class, PasswordResetResponse::class);
         $this->app->singleton(FailedPasswordResetResponseContract::class, FailedPasswordResetResponse::class);
 
-        Fortify::createUsersUsing(CreateNewUser::class);
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::authenticateUsing(fn (Request $request) => app(AuthenticateUser::class)($request));
         Fortify::authenticateThrough(fn () => [
