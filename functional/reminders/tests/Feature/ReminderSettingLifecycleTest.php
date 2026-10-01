@@ -54,4 +54,19 @@ class ReminderSettingLifecycleTest extends TestCase
         $this->assertDatabaseCount('push_subscriptions', 0);
         $this->assertDatabaseCount('reminder_sends', 0);
     }
+
+    public function test_erasing_an_account_at_the_end_of_its_grace_period_deletes_the_same(): void
+    {
+        $setting = ReminderSetting::factory()->emailEnabled()->create();
+        PushSubscription::factory()->count(2)->for($setting, 'subscribable')->create();
+        ReminderSend::factory()->create(['user_id' => $setting->user_id]);
+        $setting->user->forceFill(['deletion_requested_at' => now()->subDays(31)])->save();
+
+        $this->artisan('model:prune', ['--model' => [User::class]])->assertSuccessful();
+
+        $this->assertModelMissing($setting->user);
+        $this->assertDatabaseCount('reminder_settings', 0);
+        $this->assertDatabaseCount('push_subscriptions', 0);
+        $this->assertDatabaseCount('reminder_sends', 0);
+    }
 }

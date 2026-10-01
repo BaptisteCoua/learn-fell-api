@@ -5,11 +5,13 @@ namespace Functional\Moderation\Providers;
 use Functional\Catalog\Events\SubjectDeleting;
 use Functional\Moderation\Access\Controls\ModerationDecisionControl;
 use Functional\Moderation\Access\Controls\ReportControl;
+use Functional\Moderation\Listeners\AnonymizeModerationOfUser;
 use Functional\Moderation\Listeners\DeleteReportsOfDeletedSubject;
 use Functional\Moderation\Models\ModerationDecision;
 use Functional\Moderation\Models\Report;
 use Functional\Moderation\Policies\ModerationDecisionPolicy;
 use Functional\Moderation\Policies\ReportPolicy;
+use Functional\Users\Models\User;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Lomkit\Access\Access;
@@ -34,5 +36,6 @@ class ModerationServiceProvider extends LayerServiceProvider
         Gate::policy(ModerationDecision::class, ModerationDecisionPolicy::class);
 
         Event::listen(SubjectDeleting::class, DeleteReportsOfDeletedSubject::class);
+        Event::listen('eloquent.deleting: '.User::class, AnonymizeModerationOfUser::class);
     }
 }

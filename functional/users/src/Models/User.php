@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['display_name', 'email', 'password', 'timezone'])]
@@ -54,15 +55,33 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Accounts never confirmed within 7 days are removed, which frees their address.
+     * Accounts never confirmed within 7 days are removed, which frees their address; so are
+     * accounts whose deletion was requested more than 30 days ago (feature 004, FR-016).
      *
      * @return Builder<User>
      */
     public function prunable(): Builder
     {
-        return static::query()
-            ->whereNull('email_verified_at')
-            ->where('created_at', '<', now()->subDays(7));
+        // Nested, so the `id > ?` that pruning adds by chunk applies to both cases.
+        return static::query()->where(fn (Builder $prunable): Builder => $prunable
+            ->where(fn (Builder $unconfirmed): Builder => $unconfirmed
+                ->whereNull('email_verified_at')
+                ->where('created_at', '<', now()->subDays(7)))
+            ->orWhere('deletion_requested_at', '<=', now()->subDays(self::DELETION_GRACE_DAYS)));
+    }
+
+    /**
+     * Every layer erases or detaches its data on `eloquent.deleting`: in one transaction, so a
+     * layer that fails leaves the whole account for the next prune (FR-022). Files are only
+     * removed once it commits.
+     */
+    public function prune(): ?bool
+    {
+        return DB::transaction(function (): ?bool {
+            $this->pruning();
+
+            return $this->delete();
+        });
     }
 
     public function sendEmailVerificationNotification(): void

@@ -16,6 +16,7 @@ use Functional\Catalog\Events\SubjectTagsChanged;
 use Functional\Catalog\Listeners\DeleteQuestionImageFiles;
 use Functional\Catalog\Listeners\DeleteQuestionImages;
 use Functional\Catalog\Listeners\DeleteSubjectQuestions;
+use Functional\Catalog\Listeners\EraseSubjectsOfUser;
 use Functional\Catalog\Listeners\RefreshSubjectSearchDocument;
 use Functional\Catalog\Listeners\RestoreWithheldSubjects;
 use Functional\Catalog\Listeners\WithholdSubjectsOfLeavingAuthor;
@@ -31,6 +32,7 @@ use Functional\Catalog\Policies\SubjectPolicy;
 use Functional\Catalog\Policies\TagPolicy;
 use Functional\Users\Events\AccountDeletionCancelled;
 use Functional\Users\Events\AccountDeletionRequested;
+use Functional\Users\Models\User;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Lomkit\Access\Access;
@@ -65,6 +67,7 @@ class CatalogServiceProvider extends LayerServiceProvider
         Event::listen(SubjectTagsChanged::class, [RefreshSubjectSearchDocument::class, 'handleSubjectTagsChanged']);
         Event::listen(AccountDeletionRequested::class, WithholdSubjectsOfLeavingAuthor::class);
         Event::listen(AccountDeletionCancelled::class, RestoreWithheldSubjects::class);
+        Event::listen('eloquent.deleting: '.User::class, EraseSubjectsOfUser::class);
     }
 
     public function register(): void

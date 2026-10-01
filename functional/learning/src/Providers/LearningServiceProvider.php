@@ -11,6 +11,7 @@ use Functional\Learning\Events\LearningCreated;
 use Functional\Learning\Events\LearningDeleting;
 use Functional\Learning\Listeners\CreateCardsForLearning;
 use Functional\Learning\Listeners\DeleteCardsOfLearning;
+use Functional\Learning\Listeners\DeleteLearningsOfUser;
 use Functional\Learning\Listeners\DeleteSubjectLearnings;
 use Functional\Learning\Listeners\QueueQuestionForLearners;
 use Functional\Learning\Listeners\RemoveQuestionFromLearners;
@@ -18,6 +19,7 @@ use Functional\Learning\Models\CardProgress;
 use Functional\Learning\Models\Learning;
 use Functional\Learning\Policies\CardProgressPolicy;
 use Functional\Learning\Policies\LearningPolicy;
+use Functional\Users\Models\User;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Lomkit\Access\Access;
@@ -46,5 +48,6 @@ class LearningServiceProvider extends LayerServiceProvider
         Event::listen(QuestionCreated::class, QueueQuestionForLearners::class);
         Event::listen(QuestionDeleting::class, RemoveQuestionFromLearners::class);
         Event::listen(SubjectDeleting::class, DeleteSubjectLearnings::class);
+        Event::listen('eloquent.deleting: '.User::class, DeleteLearningsOfUser::class);
     }
 }

@@ -4,9 +4,11 @@ namespace Functional\Users\Providers;
 
 use Functional\Users\Console\GrantAdminCommand;
 use Functional\Users\Database\Seeders\UsersSeeder;
+use Functional\Users\Listeners\DeleteSessionsOfUser;
 use Functional\Users\Models\User;
 use Functional\Users\Policies\UserPolicy;
 use Illuminate\Contracts\Foundation\CachesRoutes;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Xefi\LaravelOSDD\LayerServiceProvider;
@@ -22,6 +24,8 @@ class UsersServiceProvider extends LayerServiceProvider
         }
 
         Gate::policy(User::class, UserPolicy::class);
+
+        Event::listen('eloquent.deleting: '.User::class, DeleteSessionsOfUser::class);
 
         $this->loadTranslationsFrom(__DIR__.'/../../lang', 'users');
 
