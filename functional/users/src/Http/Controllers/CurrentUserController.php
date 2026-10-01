@@ -7,7 +7,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * The signed-in account as the web app needs it: its name, email and permissions.
+ * The signed-in account as the web app needs it: its name, email, permissions, and the time zone
+ * its review days are counted in, also offline (feature 006).
  */
 class CurrentUserController
 {
@@ -21,6 +22,7 @@ class CurrentUserController
             'display_name' => $user->display_name,
             'email' => $user->email,
             'permissions' => $user->getAllPermissions()->pluck('name')->values(),
+            'timezone' => $user->timezone,
         ]);
     }
 }

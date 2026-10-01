@@ -113,4 +113,11 @@ class LoginTest extends TestCase
 
         $this->getJson('/api/user')->assertUnauthorized();
     }
+
+    public function test_the_current_account_comes_with_its_time_zone(): void
+    {
+        $user = User::factory()->create(['timezone' => 'America/Montreal']);
+
+        $this->actingAs($user, 'web')->getJson('/api/user')->assertOk()->assertJson(['timezone' => 'America/Montreal']);
+    }
 }
