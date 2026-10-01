@@ -31,5 +31,11 @@ return [
     'subject_choice_required' => 'Choisissez ce que deviennent vos sujets publiés : les laisser sans votre nom, ou tout effacer.',
     'subject_authorless' => 'Ce sujet a été laissé à la communauté par un compte supprimé : il ne peut plus être modifié, seulement retiré par la modération.',
     'subject_withheld' => 'Ce sujet est retenu pendant la suppression du compte de son auteur : il ne peut pas être modifié.',
+    'import_unreadable' => 'Ce fichier ne peut pas être lu. Envoyez un fichier CSV ou XLSX, par exemple enregistré depuis votre tableur.',
+    'import_too_large' => 'Ce fichier est trop gros : il doit faire au plus 5 Mo et :lines lignes.',
+    'import_single_column' => 'Le recto et le verso doivent être dans deux colonnes. Copiez deux colonnes de votre tableur, ou séparez-les par une tabulation.',
+    'import_empty' => 'Aucune question n’a été trouvée : chaque ligne doit porter un recto et un verso.',
+    'question_limit_exceeded' => 'Ce sujet ne peut plus recevoir que :remaining questions, sur les :max autorisées.',
+    'import_has_errors' => 'Certaines lignes sont à corriger : rien n’a été importé. Corrigez-les, puis envoyez de nouveau votre source.',
     'last_admin' => 'Vous êtes le dernier compte d’administration de CINQ : votre compte ne peut pas être supprimé tant qu’aucun autre administrateur n’est nommé.',
 ];
