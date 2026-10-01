@@ -2,7 +2,6 @@
 
 namespace Functional\Learning\Rest\Instructions;
 
-use Functional\Catalog\Models\Question;
 use Functional\Learning\Queries\DueCardsQuery;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
@@ -25,11 +24,7 @@ class DueCardsInstruction extends Instruction
      */
     public function handle(array $fields, Builder $query): void
     {
-        DueCardsQuery::constrain($query, Auth::user()->timezone, $fields['subject_ids'])
-            ->reorder()
-            ->orderBy('card_progress.next_review_on')
-            ->orderBy('card_progress.subject_id')
-            ->orderBy(Question::query()->select('position')->whereColumn('questions.id', 'card_progress.question_id'));
+        DueCardsQuery::inReviewOrder(DueCardsQuery::constrain($query, Auth::user()->timezone, $fields['subject_ids']));
     }
 
     /**
