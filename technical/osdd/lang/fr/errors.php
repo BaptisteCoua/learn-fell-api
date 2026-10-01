@@ -32,6 +32,7 @@ return [
     'recto_empty' => 'Ajoutez un texte ou une image au recto.',
     'recto_image_limit' => 'Un recto porte au plus :max images.',
     'subject_choice_required' => 'Choisissez ce que deviennent vos sujets publiés : les laisser sans votre nom, ou tout effacer.',
+    'subject_authorless' => 'Ce sujet a été laissé à la communauté par un compte supprimé : il ne peut plus être modifié, seulement retiré par la modération.',
     'subject_withheld' => 'Ce sujet est retenu pendant la suppression du compte de son auteur : il ne peut pas être modifié.',
     'last_admin' => 'Vous êtes le dernier compte d’administration de CINQ : votre compte ne peut pas être supprimé tant qu’aucun autre administrateur n’est nommé.',
 ];

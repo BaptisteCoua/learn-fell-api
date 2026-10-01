@@ -6,6 +6,7 @@ use Functional\Catalog\Enums\SubjectStatus;
 use Functional\Catalog\Models\Question;
 use Functional\Catalog\Models\Subject;
 use Functional\Catalog\Tests\Concerns\SearchesCatalog;
+use Functional\Catalog\Tests\Concerns\WritesCatalog;
 use Functional\Users\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,7 +17,7 @@ use Tests\TestCase;
  */
 class KeptSubjectsOfPendingDeletionTest extends TestCase
 {
-    use RefreshDatabase, SearchesCatalog;
+    use RefreshDatabase, SearchesCatalog, WritesCatalog;
 
     public function test_kept_subjects_stay_in_the_catalogue_without_the_name(): void
     {
@@ -42,5 +43,21 @@ class KeptSubjectsOfPendingDeletionTest extends TestCase
             'filters' => [['field' => 'subject_id', 'value' => $subject->getKey()]],
         ], User::factory()->create());
         $this->assertSame([$question->getKey()], $this->returnedIds($questions));
+    }
+
+    public function test_a_subject_without_author_is_read_only_even_for_moderation(): void
+    {
+        $subject = Subject::factory()->published()->create(['title' => 'Avant', 'author_id' => null]);
+        $question = Question::factory()->for($subject)->create(['position' => 1]);
+        $moderator = tap(User::factory()->create(), fn (User $user) => $user->givePermissionTo('subjects.moderate'));
+
+        $this->updateResource($moderator, 'subjects', $subject->getKey(), ['title' => 'Après'])
+            ->assertUnprocessable()
+            ->assertJson(['code' => 'subject_authorless']);
+        $this->updateResource($moderator, 'questions', $question->getKey(), ['verso_html' => '<p>Autre réponse</p>'])
+            ->assertUnprocessable()
+            ->assertJson(['code' => 'subject_authorless']);
+
+        $this->assertSame('Avant', $subject->fresh()->title);
     }
 }
