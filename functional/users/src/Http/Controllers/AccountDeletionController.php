@@ -41,6 +41,9 @@ class AccountDeletionController
         $requestAccountDeletion($user, $validated['password'], $validated['keep_published_subjects'] ?? null);
 
         Auth::guard('web')->logout();
+        // auth:sanctum made its guard the default one, which the database session handler reads
+        // to stamp the session it writes at the end of this request: forget the user there too.
+        Auth::forgetUser();
 
         if ($request->hasSession()) {
             $request->session()->invalidate();
