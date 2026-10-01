@@ -15,4 +15,14 @@ return [
         'webp_quality' => 80,
         'pending_hours' => 24,
     ],
+
+    /*
+    | Importing questions from a pasted text or a CSV / XLSX file (specs/008-question-import,
+    | FR-009). Lines are counted as read, header and empty lines included.
+    */
+    'import' => [
+        'max_kilobytes' => 5120,
+        'max_lines' => 2000,
+        'extensions' => ['csv', 'tsv', 'txt', 'xlsx'],
+    ],
 ];

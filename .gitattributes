@@ -9,3 +9,7 @@
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
+
+# Import fixtures keep the exact bytes each spreadsheet writes: encoding and line endings.
+/functional/catalog/tests/fixtures/import/*.csv -text
+/functional/catalog/tests/fixtures/import/*.txt -text

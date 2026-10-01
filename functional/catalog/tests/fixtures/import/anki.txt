@@ -1,0 +1,5 @@
+#separator:tab
+#html:false
+#notetype column:3
+Pérou	Lima	Basique
+Chili	Santiago	Basique
