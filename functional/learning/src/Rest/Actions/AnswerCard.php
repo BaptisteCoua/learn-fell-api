@@ -3,11 +3,13 @@
 namespace Functional\Learning\Rest\Actions;
 
 use Functional\Learning\Domain\LeitnerSchedule;
+use Functional\Learning\Enums\AnswerStatus;
 use Functional\Learning\Models\CardProgress;
 use Functional\Learning\Models\ReviewAnswer;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Lomkit\Rest\Actions\Action;
 use Lomkit\Rest\Http\Requests\RestRequest;
 use Technical\Osdd\Exceptions\BusinessRuleException;
@@ -48,6 +50,9 @@ class AnswerCard extends Action
             $toBox = LeitnerSchedule::arrivalBox($card->box, $known);
 
             ReviewAnswer::query()->create([
+                'answer_id' => (string) Str::uuid(),
+                'due_on' => $card->next_review_on->toDateString(),
+                'status' => AnswerStatus::Applied,
                 'card_progress_id' => $card->getKey(),
                 'user_id' => $learner->getKey(),
                 'known' => $known,

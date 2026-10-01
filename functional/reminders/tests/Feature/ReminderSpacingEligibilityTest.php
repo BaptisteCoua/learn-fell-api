@@ -40,12 +40,7 @@ class ReminderSpacingEligibilityTest extends TestCase
     {
         $card = CardProgress::query()->where('user_id', $this->setting->user_id)->firstOrFail();
 
-        ReviewAnswer::query()->create([
-            'card_progress_id' => $card->id,
-            'user_id' => $this->setting->user_id,
-            'known' => true,
-            'from_box' => 1,
-            'to_box' => 2,
+        ReviewAnswer::factory()->forCard($card)->create([
             'answered_at' => CarbonImmutable::parse(self::TODAY.' 12:00', 'Europe/Paris')->subDays($days),
         ]);
     }
@@ -113,12 +108,7 @@ class ReminderSpacingEligibilityTest extends TestCase
         // 29 September in both Paris and Auckland; the answer is on the 21st in Paris, the 22nd in Auckland.
         $this->travelTo(CarbonImmutable::parse('2026-09-29 08:00', 'Europe/Paris'));
         $this->setting->user->update(['timezone' => 'Pacific/Auckland']);
-        ReviewAnswer::query()->create([
-            'card_progress_id' => CardProgress::query()->where('user_id', $this->setting->user_id)->firstOrFail()->id,
-            'user_id' => $this->setting->user_id,
-            'known' => true,
-            'from_box' => 1,
-            'to_box' => 2,
+        ReviewAnswer::factory()->forCard(CardProgress::query()->where('user_id', $this->setting->user_id)->firstOrFail())->create([
             'answered_at' => CarbonImmutable::parse('2026-09-21 23:30', 'Europe/Paris'),
         ]);
         $this->remindedDaysAgo(1);
