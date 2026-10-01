@@ -76,7 +76,9 @@ class AnswerCard extends Action
             'answer_id' => ['sometimes', 'uuid'],
             'card_progress_id' => ['required', 'integer'],
             'known' => ['required', 'boolean'],
-            'answered_at' => ['sometimes', 'date'],
+            // An ISO 8601 instant with its offset, `+00:00` or `Z` for UTC as a device writes it:
+            // never a relative date.
+            'answered_at' => ['sometimes', 'date_format:Y-m-d\TH:i:sP,Y-m-d\TH:i:s.vP,Y-m-d\TH:i:sp,Y-m-d\TH:i:s.vp'],
             'due_on' => ['sometimes', 'date_format:Y-m-d'],
         ];
     }

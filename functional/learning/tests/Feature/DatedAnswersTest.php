@@ -88,6 +88,19 @@ class DatedAnswersTest extends TestCase
         ]], $this->answersOf($card));
     }
 
+    public function test_an_answer_dated_as_the_web_sends_it_counts_at_that_time(): void
+    {
+        $card = $this->learnedCard($this->learner, 2, self::MONDAY);
+
+        $this->answer($this->learner, $card->id, true, [
+            'answer_id' => (string) Str::uuid(),
+            'answered_at' => '2026-10-05T06:12:31.432Z',
+            'due_on' => self::MONDAY,
+        ])->assertOk();
+
+        $this->assertSame(['box' => 3, 'next_review_on' => '2026-10-09', 'last_answered_at' => '2026-10-05T06:12:31+00:00'], $this->stateOf($card));
+    }
+
     public function test_two_answers_received_out_of_order_end_as_if_received_in_order(): void
     {
         $mondayAnswer = ['answered_at' => '2026-10-05T08:00:00+02:00', 'due_on' => self::MONDAY];
@@ -188,6 +201,10 @@ class DatedAnswersTest extends TestCase
         return [
             'answer id' => [['answer_id' => 'not-a-uuid']],
             'answered at' => [['answered_at' => 'not a date']],
+            'answered at, relative' => [['answered_at' => 'yesterday']],
+            'answered at, relative ahead' => [['answered_at' => 'tomorrow']],
+            'answered at, day only' => [['answered_at' => '2026-10-05']],
+            'answered at, no offset' => [['answered_at' => '2026-10-05T08:00:00']],
             'due on' => [['due_on' => '05/10/2026']],
             'known' => [['known' => 'maybe']],
             'card' => [['card_progress_id' => 'first']],
