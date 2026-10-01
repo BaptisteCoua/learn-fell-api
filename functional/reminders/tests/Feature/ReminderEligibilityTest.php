@@ -10,9 +10,11 @@ use Functional\Learning\Queries\DueCardsQuery;
 use Functional\Learning\Tests\Concerns\ReviewsCards;
 use Functional\Reminders\Domain\ReminderEligibility;
 use Functional\Reminders\Models\PushSubscription;
+use Functional\Reminders\Models\ReminderSend;
 use Functional\Reminders\Models\ReminderSetting;
 use Functional\Users\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
@@ -143,5 +145,21 @@ class ReminderEligibilityTest extends TestCase
         CardProgress::query()->update(['next_review_on' => '2026-09-30']);
 
         $this->assertSame(2, $this->eligibility($setting)['cards']);
+    }
+
+    public function test_an_answer_sent_late_spaces_the_reminders_from_the_day_it_was_given(): void
+    {
+        $setting = $this->learnerWithEmail();
+        $card = $this->learnedCard($setting->user, 1, '2026-09-19');
+        ReminderSend::factory()->create(['user_id' => $setting->user_id, 'local_date' => '2026-09-28']);
+
+        // Given ten days ago, sent today: ten days without review, so every other day.
+        $this->answer($setting->user, $card->id, true, [
+            'answer_id' => (string) Str::uuid(),
+            'answered_at' => '2026-09-19T12:00:00+02:00',
+            'due_on' => '2026-09-19',
+        ])->assertOk();
+
+        $this->assertNull($this->eligibility($setting));
     }
 }

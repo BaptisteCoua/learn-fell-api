@@ -4,6 +4,7 @@ namespace Functional\Learning\Tests\Feature;
 
 use Functional\Catalog\Models\Question;
 use Functional\Catalog\Models\QuestionImage;
+use Functional\Learning\Enums\AnswerStatus;
 use Functional\Learning\Models\CardProgress;
 use Functional\Learning\Models\ReviewAnswer;
 use Functional\Learning\Tests\Concerns\ReviewsCards;
@@ -125,7 +126,7 @@ class ReviewSessionTest extends TestCase
         $this->assertSame([1], ReviewAnswer::query()->pluck('from_box')->unique()->values()->all());
     }
 
-    public function test_a_second_answer_on_the_same_card_is_refused(): void
+    public function test_a_second_answer_on_the_same_card_is_discarded(): void
     {
         $user = User::factory()->create();
         $subject = $this->publishedSubjectWithQuestions(1);
@@ -133,10 +134,13 @@ class ReviewSessionTest extends TestCase
         $card = CardProgress::query()->sole();
 
         $this->answer($user, $card->id, true)->assertOk();
-        $this->answer($user, $card->id, false)->assertStatus(409)->assertJson(['code' => 'card_not_due']);
+        $this->answer($user, $card->id, false)->assertOk();
 
         $this->assertSame(2, $card->fresh()->box);
-        $this->assertSame(1, ReviewAnswer::query()->count());
+        $this->assertSame(
+            [AnswerStatus::Applied, AnswerStatus::Discarded],
+            ReviewAnswer::query()->orderBy('id')->pluck('status')->all(),
+        );
     }
 
     public function test_nobody_answers_someone_elses_card(): void
@@ -146,7 +150,9 @@ class ReviewSessionTest extends TestCase
         $this->learn($user, $subject);
         $card = CardProgress::query()->sole();
 
-        $this->answer(User::factory()->create(), $card->id, true)->assertNotFound();
+        $this->answer(User::factory()->create(), $card->id, true)->assertOk();
+        $this->assertSame(1, $card->fresh()->box);
+        $this->assertSame(0, ReviewAnswer::query()->count());
         $this->assertSame([], $this->returnedIds($this->dueCards(User::factory()->create(), [$subject->id])));
     }
 

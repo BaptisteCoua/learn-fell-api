@@ -21,7 +21,6 @@ return [
     'report_already_pending' => 'Vous avez déjà signalé ce sujet. Votre signalement est en cours d’examen.',
     'subject_not_published' => 'Seul un sujet publié peut être appris.',
     'already_learning' => 'Vous apprenez déjà ce sujet.',
-    'card_not_due' => 'Cette carte n’est pas à réviser aujourd’hui.',
     'search_too_short' => 'Saisissez au moins 2 caractères pour lancer la recherche.',
     'invalid_send_time' => 'Choisissez une heure entre 6 h et 23 h 30, à l’heure pleine ou à la demi-heure.',
     'invalid_push_subscription' => 'Cet appareil n’a pas pu être enregistré pour les notifications.',
