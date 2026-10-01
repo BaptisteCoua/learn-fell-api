@@ -7,6 +7,7 @@ use Functional\Users\Actions\CreateNewUser;
 use Functional\Users\Actions\EnsureAccountIsNotLocked;
 use Functional\Users\Actions\ResetUserPassword;
 use Functional\Users\Http\Responses\FailedPasswordResetResponse;
+use Functional\Users\Http\Responses\LoginResponse;
 use Functional\Users\Http\Responses\PasswordResetLinkResponse;
 use Functional\Users\Http\Responses\PasswordResetResponse;
 use Functional\Users\Http\Responses\RegisteredResponse;
@@ -19,6 +20,7 @@ use Laravel\Fortify\Actions\CanonicalizeUsername;
 use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
 use Laravel\Fortify\Contracts\FailedPasswordResetLinkRequestResponse;
 use Laravel\Fortify\Contracts\FailedPasswordResetResponse as FailedPasswordResetResponseContract;
+use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 use Laravel\Fortify\Contracts\PasswordResetResponse as PasswordResetResponseContract;
 use Laravel\Fortify\Contracts\RegisterResponse;
 use Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse;
@@ -36,6 +38,7 @@ class FortifyServiceProvider extends ServiceProvider
     {
         // Bound in boot: Fortify registers its own responses after this provider's register().
         $this->app->singleton(RegisterResponse::class, RegisteredResponse::class);
+        $this->app->singleton(LoginResponseContract::class, LoginResponse::class);
         $this->app->singleton(SuccessfulPasswordResetLinkRequestResponse::class, PasswordResetLinkResponse::class);
         $this->app->singleton(FailedPasswordResetLinkRequestResponse::class, PasswordResetLinkResponse::class);
         $this->app->singleton(PasswordResetResponseContract::class, PasswordResetResponse::class);

@@ -2,9 +2,13 @@
 
 namespace Functional\Users\Actions;
 
+use Functional\Users\Events\AccountDeletionCancelled;
+use Functional\Users\Http\Responses\LoginResponse;
 use Functional\Users\Models\User;
 use Functional\Users\Support\AccountLockout;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Technical\Osdd\Exceptions\BusinessRuleException;
@@ -34,8 +38,30 @@ class AuthenticateUser
 
         $this->lockout->clear($email);
         $this->rememberTimezone($user, $request);
+        $this->cancelPendingDeletion($user);
 
         return $user;
+    }
+
+    /**
+     * Logging in during the grace period cancels the deletion request (feature 004, FR-014).
+     * The checks above answer a pending account exactly as an active one (FR-024).
+     */
+    private function cancelPendingDeletion(User $user): void
+    {
+        if (! $user->isPendingDeletion()) {
+            return;
+        }
+
+        DB::transaction(function () use ($user): void {
+            $user->forceFill(['deletion_requested_at' => null, 'keeps_published_subjects' => null])->save();
+
+            event(new AccountDeletionCancelled($user));
+        });
+
+        // Fortify hands this action its LoginRequest, and the response the base request: the
+        // request-scoped context is what both see.
+        Context::addHidden(LoginResponse::DELETION_CANCELLED, true);
     }
 
     /**

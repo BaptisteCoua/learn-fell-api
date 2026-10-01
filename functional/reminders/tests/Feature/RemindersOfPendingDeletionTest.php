@@ -48,4 +48,19 @@ class RemindersOfPendingDeletionTest extends TestCase
         $this->assertTrue($setting->fresh()->email_enabled);
         $this->assertSame(1, PushSubscription::query()->count());
     }
+
+    public function test_reminders_come_back_with_the_same_settings_once_cancelled(): void
+    {
+        $setting = $this->learnerWithDueCards();
+        $nextReminderAt = $setting->next_reminder_at;
+        $setting->user->forceFill(['deletion_requested_at' => now()->subDays(3)])->save();
+        $this->app['auth']->forgetGuards();
+
+        $this->postJson('/api/login', ['email' => $setting->user->email, 'password' => 'password'])->assertOk();
+
+        $reminder = app(ReminderEligibility::class)->for($setting->fresh());
+        $this->assertSame(3, $reminder?->cardsCount);
+        $this->assertEquals($nextReminderAt, $setting->fresh()->next_reminder_at);
+        $this->assertSame(1, PushSubscription::query()->count());
+    }
 }

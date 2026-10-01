@@ -39,8 +39,11 @@ class AccountDeletionController
         $requestAccountDeletion($user, $validated['password'], $validated['keep_published_subjects'] ?? null);
 
         Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         return new JsonResponse(['erase_on' => $user->eraseOn()->toDateString()]);
     }

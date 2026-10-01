@@ -17,6 +17,7 @@ use Functional\Catalog\Listeners\DeleteQuestionImageFiles;
 use Functional\Catalog\Listeners\DeleteQuestionImages;
 use Functional\Catalog\Listeners\DeleteSubjectQuestions;
 use Functional\Catalog\Listeners\RefreshSubjectSearchDocument;
+use Functional\Catalog\Listeners\RestoreWithheldSubjects;
 use Functional\Catalog\Listeners\WithholdSubjectsOfLeavingAuthor;
 use Functional\Catalog\Models\Category;
 use Functional\Catalog\Models\Question;
@@ -28,6 +29,7 @@ use Functional\Catalog\Policies\QuestionImagePolicy;
 use Functional\Catalog\Policies\QuestionPolicy;
 use Functional\Catalog\Policies\SubjectPolicy;
 use Functional\Catalog\Policies\TagPolicy;
+use Functional\Users\Events\AccountDeletionCancelled;
 use Functional\Users\Events\AccountDeletionRequested;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -62,6 +64,7 @@ class CatalogServiceProvider extends LayerServiceProvider
         Event::listen(QuestionImageDeleted::class, DeleteQuestionImageFiles::class);
         Event::listen(SubjectTagsChanged::class, [RefreshSubjectSearchDocument::class, 'handleSubjectTagsChanged']);
         Event::listen(AccountDeletionRequested::class, WithholdSubjectsOfLeavingAuthor::class);
+        Event::listen(AccountDeletionCancelled::class, RestoreWithheldSubjects::class);
     }
 
     public function register(): void
