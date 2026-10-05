@@ -1,0 +1,29 @@
+name: Deploy to Railway
+
+# Railway's native GitHub auto-deploy never fired for the CLI-connected services,
+# so deployment is driven from here instead: every push to main redeploys each
+# service this repo backs. api, worker and scheduler share one image and differ
+# only by their CONTAINER_ROLE variable, so each is deployed independently.
+# Requires a RAILWAY_TOKEN secret — a project token for the learn-fell
+# production environment.
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [api, worker, scheduler]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install -g @railway/cli
+      - run: railway up --service ${{ matrix.service }} --ci
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
