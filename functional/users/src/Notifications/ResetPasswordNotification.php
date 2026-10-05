@@ -3,14 +3,19 @@
 namespace Functional\Users\Notifications;
 
 use Functional\Users\Models\User;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
  * The password reset email (FR-005); the link opens the web page that sets a new password.
+ * Queued so a slow or failing mail provider never blocks the "forgot password" request.
  */
-class ResetPasswordNotification extends Notification
+class ResetPasswordNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     public function __construct(private readonly string $token) {}
 
     /**

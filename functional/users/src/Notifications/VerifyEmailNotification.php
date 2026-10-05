@@ -4,14 +4,19 @@ namespace Functional\Users\Notifications;
 
 use Functional\Users\Models\User;
 use Functional\Users\Support\EmailVerificationLink;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * The confirmation email sent at registration and on request (FR-002).
+ * The confirmation email sent at registration and on request (FR-002). Queued so a slow or
+ * failing mail provider never blocks — or fails — the registration request itself.
  */
-class VerifyEmailNotification extends Notification
+class VerifyEmailNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     /**
      * @return list<string>
      */
